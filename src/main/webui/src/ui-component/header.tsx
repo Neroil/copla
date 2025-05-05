@@ -1,6 +1,8 @@
 import { Button } from "@material-tailwind/react";
+import {useAuthStatus} from "../resources/AuthStatus.tsx";
 
 function Header(){
+    const { isLoggedIn } = useAuthStatus();
 
     return (
         <>
@@ -13,11 +15,26 @@ function Header(){
                                 <Button>Home</Button>
                             </a>
                         </li>
-                        <li>
-                            <a href={"/login"}>
-                                <Button>Login</Button>
-                            </a>
-                        </li>
+                        {
+                            isLoggedIn ? (
+                                <>
+                                    <li>
+                                        <a href={"/profile"}>
+                                            <Button>Profile</Button>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href={"/logout"}>
+                                            <Button>Logout</Button>
+                                        </a>
+                                    </li>
+                                </>
+                            ) : <li>
+                                <a href={"/login"}>
+                                    <Button>Login</Button>
+                                </a>
+                            </li>
+                        }
                     </ul>
 
                 </nav>

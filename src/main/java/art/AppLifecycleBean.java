@@ -4,12 +4,13 @@ import art.entities.User;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
+import jakarta.inject.Singleton;
 import jakarta.transaction.Transactional;
 
 /**
  * Lifecycle bean to initialize elements on application startup.
  */
-@ApplicationScoped
+@Singleton
 public class AppLifecycleBean {
 
     @Transactional
