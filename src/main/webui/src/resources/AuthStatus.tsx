@@ -18,6 +18,8 @@ export function useAuthStatus(): AuthStatus {
                     headers: {
                         'Accept': 'application/json',
                     },
+                    credentials: 'include',
+                    redirect: 'manual'
                 });
 
                 if (response.ok) {

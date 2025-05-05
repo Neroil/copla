@@ -19,8 +19,6 @@ public class UserResource {
 
     @GET
     @Path("/me")
-    @Authenticated
-    @Produces(MediaType.APPLICATION_JSON)
     public Response me() {
         if (identity.isAnonymous()) { // Shouldn't be possible but just in case
             return Response.status(Response.Status.UNAUTHORIZED).build();
