@@ -1,58 +1,61 @@
 package art.entities;
 
+import io.quarkus.elytron.security.common.BcryptUtil;
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.security.jpa.Password;
+import io.quarkus.security.jpa.Roles;
+import io.quarkus.security.jpa.Username;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+import io.quarkus.security.jpa.UserDefinition;
 
 @Entity
-public class User {
+@Table(name = "users")
+@UserDefinition
+public class User extends PanacheEntity {
 
+    @Username //Username is the ID
     public String name;
+
+    @Password
     public String hashed_password;
+
+    @Roles
+    public String role;
+
     public String email;
-    @Id
-    @GeneratedValue
-    private Long id;
 
-
-    public User() {
+    public static void add(String username, String password, String role) {
+        add(username, password, role, null);
     }
 
-    public User(String name, String email, String hashed_password) {
-        this.name = name;
-        this.email = email;
-        this.hashed_password = hashed_password;
+    public static void add(String username, String password, String role, String email) {
+        User user = new User();
+        user.name = username;
+        user.hashed_password = BcryptUtil.bcryptHash(password); // Automatically hash the password
+        user.role = role;
+        user.email = email;
+        user.persist();
     }
 
-    public String getName() {
-        return name;
+    public static User findByUsername(String username) {
+        return find("name", username).firstResult();
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public static User findByEmail(String email) {
+        return find("email", email).firstResult();
     }
 
-    public String getEmail() {
-        return email;
+    public static Boolean existsName(String username) {
+        return findByUsername(username) != null;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public static Boolean existsEmail(String email) {
+        return findByEmail(email) != null;
     }
 
-    public String getHashed_password() {
-        return hashed_password;
-    }
 
-    public void setHashed_password(String password) {
-        this.hashed_password = password;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 }
