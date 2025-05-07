@@ -20,7 +20,7 @@ public class UserResource {
     @GET
     @Path("/me")
     public Response me() {
-        if (identity.isAnonymous()) { // Shouldn't be possible but just in case
+        if (identity.isAnonymous()) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         String username = identity.getPrincipal().getName();

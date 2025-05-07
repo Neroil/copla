@@ -1,4 +1,5 @@
 package art.entities;
+import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -16,7 +17,7 @@ public class Artist extends User {
     public static void add(String username, String password, String email, boolean verified) {
         Artist artist = new Artist();
         artist.name = username;
-        artist.hashed_password = password; 
+        artist.hashed_password = BcryptUtil.bcryptHash(password);
         artist.role = "artist";
         artist.email = email;
         artist.verified = verified;
