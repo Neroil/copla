@@ -38,13 +38,15 @@ function UserList(){
         fetchUserList();
     }, []);
 
-    if (loading) return <div>Loading user data...</div>;
-    if (error) return <div>Error: {error}</div>;
-
     return(
         <div className="min-h-screen bg-gradient-to-b from-white to-violet-100 flex flex-col">
             <Header/>
             <main className="p-4 flex justify-center items-center grow w-full">
+                {loading ? (
+                    <div>Loading user list...</div>
+                    ) : error ?(
+                    <div>Error: {error}</div>
+                    ): (
                 <div className="w-full max-w-md">
                     <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
                         <h2 className="text-xl font-semibold mb-2">Users</h2>
@@ -58,7 +60,8 @@ function UserList(){
                             ))}
                         </ul>
                     </div>
-                </div>
+                </div>)
+                }
             </main>
         </div>
     );
