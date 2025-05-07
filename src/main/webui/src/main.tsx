@@ -6,6 +6,8 @@ import React from 'react';
 import Login from "./pages/Login.tsx";
 import {ThemeProvider} from "@material-tailwind/react";
 import Register from "./pages/Register.tsx";
+import UserProfile from "./pages/UserProfile.tsx";
+import UserList from "./pages/UserList.tsx";
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
@@ -15,6 +17,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                     <Route path="/" element={<App/>}/>
                     <Route path="login" element={<Login/>}/>
                     <Route path="register" element={<Register/>}/>
+                    <Route path="users/:userId" element={<UserProfile/>}/>
+                    <Route path="users" element={<UserList/>}/>
                 </Routes>
             </BrowserRouter>
         </ThemeProvider>

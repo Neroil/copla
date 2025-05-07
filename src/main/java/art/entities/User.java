@@ -6,14 +6,14 @@ import io.quarkus.security.jpa.*;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Table(name = "users")
 @UserDefinition
 public class User extends PanacheEntity {
-
-    @Username //Username is the ID
+    @Username
     public String name;
 
     @Password
@@ -23,6 +23,8 @@ public class User extends PanacheEntity {
     public String role;
 
     public String email;
+
+    public LocalDateTime timeCreated;
 
     public static void add(String username, String password) {
         add(username, password, null);
@@ -34,6 +36,7 @@ public class User extends PanacheEntity {
         user.hashed_password = BcryptUtil.bcryptHash(password);
         user.role = "user";
         user.email = email;
+        user.timeCreated = LocalDateTime.now();
         user.persist();
     }
 

@@ -20,6 +20,11 @@ function Header(){
                                 <Button>Home</Button>
                             </a>
                         </li>
+                        <li>
+                            <a href="/users">
+                                <Button>Users</Button>
+                            </a>
+                        </li>
                         {
                             isLoggedIn ? (
                                 <>

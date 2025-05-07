@@ -1,5 +1,6 @@
 package art.resources;
 
+import art.dtos.UserRegistrationDto;
 import art.entities.User;
 import jakarta.enterprise.context.ApplicationScoped; // Use ApplicationScoped for injection/transaction management
 import jakarta.transaction.Transactional;
@@ -17,9 +18,9 @@ import java.util.Map; // For simple JSON response
 public class RegisterResource {
 
     @POST
-    @Consumes(MediaType.APPLICATION_JSON) // Expect JSON
-    @Produces(MediaType.APPLICATION_JSON) // Return JSON
-    @Transactional // Manage transaction for User.add
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
     public Response registerUser(UserRegistrationDto registrationData) {
 
         if (registrationData.name == null || registrationData.name.isBlank() ||
@@ -32,7 +33,7 @@ public class RegisterResource {
 
         if (User.existsName(registrationData.name) || User.existsEmail(registrationData.email)) {
             return Response.status(Response.Status.CONFLICT)
-                    .entity(Map.of("message", "User already exists!"))
+                    .entity(Map.of("message", "UserProfile already exists!"))
                     .build();
         }
 
@@ -48,7 +49,7 @@ public class RegisterResource {
 
 
         return Response.status(Response.Status.CREATED) // Use CREATED status for success
-                .entity(Map.of("message", "User registered successfully!"))
+                .entity(Map.of("message", "UserProfile registered successfully!"))
                 .build();
     }
 }
