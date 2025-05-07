@@ -12,6 +12,8 @@ import jakarta.persistence.Table;
 
 import io.quarkus.security.jpa.UserDefinition;
 
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 @UserDefinition
@@ -20,7 +22,7 @@ public class User extends PanacheEntity {
     @Username //Username is the ID
     public String name;
 
-    @Password
+    @Password //Password is hashed with Bcrypt by default
     public String hashed_password;
 
     @Roles
@@ -28,15 +30,15 @@ public class User extends PanacheEntity {
 
     public String email;
 
-    public static void add(String username, String password, String role) {
-        add(username, password, role, null);
+    public static void add(String username, String password) {
+        add(username, password, null);
     }
 
-    public static void add(String username, String password, String role, String email) {
+    public static void add(String username, String password, String email) {
         User user = new User();
         user.name = username;
-        user.hashed_password = BcryptUtil.bcryptHash(password); // Automatically hash the password
-        user.role = role;
+        user.hashed_password = password;
+        user.role = "user";
         user.email = email;
         user.persist();
     }
@@ -57,5 +59,8 @@ public class User extends PanacheEntity {
         return findByEmail(email) != null;
     }
 
+    public static List<User> findAllUsers() {
+        return listAll();
+    }
 
 }

@@ -28,14 +28,15 @@ class "Gallery" as G {
     +id: int
     +name: string
     +description: string
-    +created_at: datetime
 }
 
 class "Artwork" as W {
     +id: int
-    +title: string
-    +description: string
-    +created_at: datetime
+    +title: String
+    +description: String
+    +timeCreated: LocalDateTime
+    +imageUrl: String
+    +price: double
 }
 
 ' Relationships
@@ -48,4 +49,5 @@ CR "1" -- "1" A : assigned_to >
 DM "1" -- "1" U : sender >
 DM "1" -- "1" U : recipient >
 G "0..*" -- "0..*" W : contains >
+A "1" -- "0..*" W : creates >
 @enduml

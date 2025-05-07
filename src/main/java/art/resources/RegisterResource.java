@@ -37,7 +37,7 @@ public class RegisterResource {
         }
 
         try {
-            User.add(registrationData.name, registrationData.password, "user", registrationData.email); // Added email
+            User.add(registrationData.name, registrationData.password, registrationData.email);
 
         } catch (Exception e) {
             // Log the exception e
