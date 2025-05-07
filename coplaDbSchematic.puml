@@ -1,0 +1,53 @@
+@startuml
+
+class "Artist" as A {
+    +verified: boolean
+}
+
+class "CommissionRequest" as CR {
+    +id: int
+    +status: Status
+    +created_at: datetime
+    +description: string
+}
+
+class "Direct Message" as DM {
+    +id: int
+    +content: string
+    +created_at: datetime
+}
+
+class "User" as U {
+    +id: int
+    +username: string
+    +hashed_password: string
+    +email: string
+}
+
+class "Gallery" as G {
+    +id: int
+    +name: string
+    +description: string
+}
+
+class "Artwork" as W {
+    +id: int
+    +title: String
+    +description: String
+    +timeCreated: LocalDateTime
+    +imageUrl: String
+    +price: double
+}
+
+' Relationships
+A "1" -- "0..*" G : owns >
+U ^-- A
+U "0..*" -- "0..*" U : follows >
+U "0..*" -- "1..*" A  : requestsCommission >
+CR "1" -- "1" U : requested_by >
+CR "1" -- "1" A : assigned_to >
+DM "1" -- "1" U : sender >
+DM "1" -- "1" U : recipient >
+G "0..*" -- "0..*" W : contains >
+A "1" -- "0..*" W : creates >
+@enduml

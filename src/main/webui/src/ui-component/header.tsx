@@ -1,6 +1,13 @@
-import { Button } from "@material-tailwind/react";
+import {Button} from "@material-tailwind/react";
+import {useAuthStatus} from "../resources/AuthStatus.tsx";
+
+function logout() {
+    document.cookie = `quarkus-credential=; Max-Age=0;path=/`;
+    window.location.href = '/';
+}
 
 function Header(){
+    const { isLoggedIn } = useAuthStatus();
 
     return (
         <>
@@ -13,11 +20,24 @@ function Header(){
                                 <Button>Home</Button>
                             </a>
                         </li>
-                        <li>
-                            <a href={"/login"}>
-                                <Button>Login</Button>
-                            </a>
-                        </li>
+                        {
+                            isLoggedIn ? (
+                                <>
+                                    <li>
+                                        <a href={"/profile"}>
+                                            <Button>Profile</Button>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <Button onClick={logout}>Logout</Button>
+                                    </li>
+                                </>
+                            ) : <li>
+                                <a href={"/login"}>
+                                    <Button>Login</Button>
+                                </a>
+                            </li>
+                        }
                     </ul>
 
                 </nav>
