@@ -12,14 +12,11 @@ function Header(){
     return (
         <>
             <div className="nav bg-gradient-to-r from-gray-900 to bg-gray-700 text-white flex justify-between items-center p-4">
-                <h1 className="italic">CoPla</h1>
+
+                    <h1 className="italic"><a href={"/"}>CoPla</a></h1>
+
                 <nav>
                     <ul>
-                        <li>
-                            <a href="/">
-                                <Button>Home</Button>
-                            </a>
-                        </li>
                         <li>
                             <a href="/users">
                                 <Button>Users</Button>
