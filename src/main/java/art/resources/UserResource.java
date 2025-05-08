@@ -66,6 +66,7 @@ public class UserResource {
         userDto.name = user.name;
         userDto.email = user.email;
         userDto.timeCreated = user.timeCreated;
+        userDto.profilePicPath = user.profilePicPath;
 
         return Response.ok(userDto).build();
     }

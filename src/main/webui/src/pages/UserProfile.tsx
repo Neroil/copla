@@ -68,6 +68,7 @@ function UserProfile() {
 
             // Refresh user data after successful upload
             const updatedUser = await response.json();
+            console.log(updatedUser);
             setUser((prevUser) => ({
                 ...prevUser!,
                 profilePicPath: updatedUser.url, // Update the profile picture path
@@ -95,7 +96,7 @@ function UserProfile() {
                                 <Avatar
                                     size={"xl"}
                                     shape={"rounded"}
-                                    src={user?.profilePicPath || "https://via.placeholder.com/150"}
+                                    src={user?.profilePicPath || "https://avatar.iran.liara.run/public/boy"}
                                     alt="profile-picture"
                                 />
                                 <h2 className="text-xl font-semibold mb-2">{user?.name}</h2>
@@ -104,10 +105,10 @@ function UserProfile() {
                             <p>Email: {user?.email}</p>
                             <p>Member since: {user?.timeCreated ? new Date(user.timeCreated).toLocaleDateString() : "Unknown"}</p>
 
-                            {isCurrentUser && (
+                            {isCurrentUser&& (
                                 <div className="mt-4">
                                     <label className="block text-sm font-medium text-gray-700">
-                                        Upload Profile Picture
+                                        Change Profile Picture
                                     </label>
                                     <input
                                         type="file"

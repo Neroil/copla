@@ -4,7 +4,9 @@ import art.entities.User;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
+import org.jboss.resteasy.reactive.RestForm;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 
 import jakarta.ws.rs.core.MediaType;
@@ -17,12 +19,16 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
+import org.jboss.logging.Logger;
+
 @Path("/images")
 @ApplicationScoped
 public class ImageResource {
 
     @Inject
     SecurityIdentity identity;
+
+    private static final Logger log = Logger.getLogger(ImageResource.class);
 
     private final String uploadDir;
 
@@ -44,7 +50,7 @@ public class ImageResource {
 
             Files.copy(file.uploadedFile(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 
-            String imageUrl = "/images/view/" + fileName;
+            String imageUrl = "api/images/view/" + fileName;
             return Response.ok().entity("{\"url\":\"" + imageUrl + "\"}").build();
         } catch (IOException e) {
             return Response.serverError().entity("{\"error\":\"" + e.getMessage() + "\"}").build();
@@ -53,22 +59,29 @@ public class ImageResource {
 
     @POST
     @Path("/upload/profilepic")
+    @Transactional
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response uploadProfilePicture(FileUpload file) {
+    public Response uploadProfilePicture(@RestForm("file") FileUpload file) {
         //Don't allow anyone to upload files
         if (identity.isAnonymous()) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
+
         String username = identity.getPrincipal().getName();
         String fileName = username + file.fileName();
 
         Response uploadResponse = uploadImage(file, fileName);
 
+
+        log.info("Checking if image upload was successful " + uploadResponse.getStatus());
+
         if (uploadResponse.getStatus() == Response.Status.OK.getStatusCode()) {
+            log.info("Image uploaded successfully");
             User user = User.findByUsername(username);
             if (user != null) {
-                user.profilePicPath = "/images/view/" + fileName;
+                log.info("User found: " + user.name);
+                user.profilePicPath = "api/images/view/" + fileName;
                 user.persist();
             }
         }
@@ -86,6 +99,7 @@ public class ImageResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
+        System.out.println(file.fileName());
         String fileName = identity.getPrincipal().getName() + "_" + UUID.randomUUID();
 
         return uploadImage(file, fileName);
