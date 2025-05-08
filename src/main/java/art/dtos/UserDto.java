@@ -7,5 +7,6 @@ public class UserDto {
     public String name;
     public String email;
     public LocalDateTime timeCreated;
+    public String profilePicPath;
 }
 

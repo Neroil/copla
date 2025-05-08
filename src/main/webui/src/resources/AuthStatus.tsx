@@ -45,6 +45,6 @@ export function useAuthStatus(): AuthStatus {
     return {
         loading,
         username,
-        isLoggedIn: username !== null,
+        isLoggedIn: username !== "",
     };
 }

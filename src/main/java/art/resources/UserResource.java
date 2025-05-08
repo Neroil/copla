@@ -32,6 +32,7 @@ public class UserResource {
             userDto.name = user.name;
             userDto.email = user.email;
             userDto.timeCreated = user.timeCreated;
+            userDto.profilePicPath = user.profilePicPath;
             return userDto;
         }).toList();
 
@@ -42,17 +43,17 @@ public class UserResource {
     @Path("/me")
     public Response me() {
         if (identity.isAnonymous()) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.ok(Map.of("username", "")).build();
         }
         String username = identity.getPrincipal().getName();
         return Response.ok(Map.of("username", username)).build();
     }
 
     @GET
-    @Path("/{userId}")
+    @Path("/{username}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getUser(@PathParam("userId") String userId) {
-        User user = User.findById(Long.valueOf(userId));
+    public Response getUser(@PathParam("username") String username) {
+        User user = User.findByUsername(username);
 
         if (user == null) {
             return Response.status(Response.Status.NOT_FOUND)

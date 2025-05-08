@@ -26,6 +26,9 @@ public class User extends PanacheEntity {
 
     public LocalDateTime timeCreated;
 
+    public String profilePicPath;
+
+
     public static void add(String username, String password) {
         add(username, password, null);
     }

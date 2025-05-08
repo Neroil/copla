@@ -1,9 +1,9 @@
-const withMT = require("@material-tailwind/react/utils/withMT");
+import { mtConfig } from "@material-tailwind/react";
 
-module.exports = withMT({
+module.exports = {
     content: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
     theme: {
         extend: {},
     },
-    plugins: [],
-});
+    plugins: [mtConfig],
+};

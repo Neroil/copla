@@ -1,7 +1,7 @@
 import './App.css';
 import './index.css';
 import { useAuthStatus } from './resources/AuthStatus.tsx';
-import { Header } from "./ui-component/header.tsx";
+import { Header } from "./ui-component/Header.tsx";
 
 function App() {
     const { loading, username, isLoggedIn } = useAuthStatus();
@@ -17,7 +17,7 @@ function App() {
                 </h1>
 
                 {loading ? (
-                    <p>Loading user information...</p>
+                    <p></p>
                 ) : isLoggedIn ? (
                     <p>Logged in as: {username}</p>
                 ) : (

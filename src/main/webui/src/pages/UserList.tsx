@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {Header} from "../ui-component/header.tsx";
+import {Header} from "../ui-component/Header.tsx";
 
 interface UserData {
     id: number;
@@ -52,8 +52,8 @@ function UserList(){
                         <h2 className="text-xl font-semibold mb-2">Users</h2>
                         <ul>
                             {userList && userList.map((user: any) => (
-                                <li key={user.id} className="mb-2">
-                                    <a href={`/users/${user.id}`} className="text-blue-500 hover:underline">
+                                <li key={user.name} className="mb-2">
+                                    <a href={`/users/${user.name}`} className="text-blue-500 hover:underline">
                                         {user.name}
                                     </a>
                                 </li>

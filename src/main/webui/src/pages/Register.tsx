@@ -1,4 +1,4 @@
-import { Header } from "../ui-component/header.tsx";
+import { Header } from "../ui-component/Header.tsx";
 import {
     Card,
     CardBody,

@@ -7,14 +7,13 @@ function logout() {
 }
 
 function Header(){
-    const { isLoggedIn } = useAuthStatus();
+    const { username, isLoggedIn } = useAuthStatus();
 
     return (
         <>
             <div className="nav bg-gradient-to-r from-gray-900 to bg-gray-700 text-white flex justify-between items-center p-4">
 
                     <h1 className="italic"><a href={"/"}>CoPla</a></h1>
-
                 <nav>
                     <ul>
                         <li>
@@ -26,7 +25,7 @@ function Header(){
                             isLoggedIn ? (
                                 <>
                                     <li>
-                                        <a href={"/profile"}>
+                                        <a href={`/users/${username}`}>
                                             <Button>Profile</Button>
                                         </a>
                                     </li>
