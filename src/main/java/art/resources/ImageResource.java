@@ -69,7 +69,7 @@ public class ImageResource {
         }
 
         String username = identity.getPrincipal().getName();
-        String fileName = username + file.fileName();
+        String fileName = username + "_" + UUID.randomUUID() + "_" + file.fileName();
 
         Response uploadResponse = uploadImage(file, fileName);
 
