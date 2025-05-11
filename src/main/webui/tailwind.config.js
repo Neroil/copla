@@ -1,12 +1,13 @@
 import { mtConfig } from "@material-tailwind/react";
 
 module.exports = {
+    darkMode: "class",
     content: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
     theme: {
         extend: {
             colors: {
                 primary: {
-                    DEFAULT: "#4a1474", // violet-600
+                    DEFAULT: "#7c3aed", // violet-600
                     light: "#a78bfa",   // violet-400
                     dark: "#4c1d95",    // violet-900
                 },
@@ -20,7 +21,6 @@ module.exports = {
                 success: "#22c55e",     // green-500
                 warning: "#facc15",     // yellow-400
                 error: "#ef4444",       // red-500
-                dark: "#001f3f",
                 "off-white": "#f8f8f8",
             },
         },

@@ -1,7 +1,18 @@
-import {useParams} from "react-router";
-import React, {useEffect, useState} from "react";
-import {Header} from "../ui-component/Header.tsx";
-import {Avatar, Button} from "@material-tailwind/react";
+import { useParams } from "react-router"; // Recommended
+import React, { useEffect, useState, useRef } from "react";
+import {
+    Avatar,
+    Button,
+    Typography,
+    Card,
+    CardBody,
+    CardHeader,
+    Spinner,
+    Alert,
+    Input,
+    Textarea // For Bio
+} from "@material-tailwind/react";
+import { PageLayout } from "../ui-component/PageLayout"; // Adjust path
 
 interface UserData {
     id: number;
@@ -9,7 +20,26 @@ interface UserData {
     email: string;
     timeCreated: string;
     profilePicPath?: string;
+    bio?: string; // Added bio
 }
+
+// Placeholder Icons
+const PhotoIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className || "w-5 h-5"}>
+        <path fillRule="evenodd" d="M1 5.25A2.25 2.25 0 013.25 3h13.5A2.25 2.25 0 0119 5.25v9.5A2.25 2.25 0 0116.75 17H3.25A2.25 2.25 0 011 14.75v-9.5zm1.5 0A.75.75 0 013.25 4.5h13.5A.75.75 0 0117.5 5.25v9.5A.75.75 0 0116.75 16H3.25a.75.75 0 01-.75-.75v-9.5zm6.5 1.5a.75.75 0 00-1.5 0v4.69L7.31 9.81a.75.75 0 00-1.12.815l1.914 3.313a.75.75 0 001.274.033l2.566-4.445a.75.75 0 00-1.274-.736L9 11.31V6.75z" clipRule="evenodd" />
+    </svg>
+);
+const PencilIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className || "w-5 h-5"}>
+        <path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" />
+    </svg>
+);
+const ExclamationTriangleIcon = ({className}: {className?: string}) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+    </svg>
+);
+
 
 function UserProfile() {
     const [isCurrentUser, setIsCurrentUser] = useState(false);
@@ -17,33 +47,42 @@ function UserProfile() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const {userId} = useParams();
+    const { userId } = useParams<{ userId: string }>(); // Ensure userId is typed
 
     useEffect(() => {
         async function fetchUserData() {
+            if (!userId) {
+                setError("User ID is missing.");
+                setLoading(false);
+                return;
+            }
             try {
                 setLoading(true);
+                setError(null);
                 const response = await fetch(`/api/users/${userId}`);
                 if (!response.ok) {
-                    throw new Error('Failed to fetch user data: ' + response.statusText);
+                    throw new Error(`User not found or server error (${response.status})`);
                 }
                 const userData = await response.json();
                 setUser(userData);
 
-                const currentUserResponse = await fetch('/api/users/me');
-                if (!currentUserResponse.ok) {
-                    throw new Error('Failed to fetch current user data: ' + currentUserResponse.statusText);
+                const currentUserResponse = await fetch('/api/users/me'); // Assuming this returns current user info
+                if (currentUserResponse.ok) {
+                    const currentUserData = await currentUserResponse.json();
+                    setIsCurrentUser(currentUserData.username === userData.name);
+                } else {
+                    // Not necessarily an error, user might not be logged in
+                    console.warn('Could not fetch current user data.');
                 }
-                const currentUserData = await currentUserResponse.json();
-                setIsCurrentUser(currentUserData.username === userData.name);
             } catch (err: any) {
-                setError(err.message);
+                setError(err.message || 'Failed to fetch user data.');
             } finally {
                 setLoading(false);
             }
         }
-
         fetchUserData();
     }, [userId]);
 
@@ -56,75 +95,147 @@ function UserProfile() {
 
         try {
             setUploading(true);
-            console.log(file.name)
+            setUploadError(null);
             const response = await fetch('/api/images/upload/profilepic', {
                 method: 'POST',
                 body: formData,
+                // Add CSRF token header if needed by your backend
             });
 
             if (!response.ok) {
-                throw new Error('Failed to upload profile picture: ' + response.statusText);
+                const errorData = await response.json().catch(() => ({ message: 'Upload failed with status: ' + response.statusText }));
+                throw new Error(errorData.message || 'Failed to upload profile picture.');
             }
 
-            // Refresh user data after successful upload
             const updatedUser = await response.json();
-            console.log(updatedUser);
             setUser((prevUser) => ({
                 ...prevUser!,
-                profilePicPath: updatedUser.url, // Update the profile picture path
+                profilePicPath: updatedUser.url,
             }));
+            if(fileInputRef.current) fileInputRef.current.value = ""; // Reset file input
         } catch (err: any) {
-            setError(err.message);
+            setUploadError(err.message);
         } finally {
             setUploading(false);
         }
     };
 
+    if (loading) {
+        return <PageLayout isLoading={true} loadingText={`Loading ${userId}'s profile...`} contentMaxWidth="max-w-2xl"
+                           children={undefined} />;
+    }
+
+    if (error || !user) {
+        return (
+            <PageLayout pageTitle="Profile Error" contentMaxWidth="max-w-2xl">
+                <Alert color="red" icon={<ExclamationTriangleIcon className="h-5 w-5" />}>
+                    {error || "User data could not be loaded."}
+                </Alert>
+            </PageLayout>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-gradient-to-b from-white to-violet-100 flex flex-col">
-            <Header/>
-            <main className="p-4 flex justify-center items-center grow w-full">
-                {loading ? (
-                    <div>Loading user data...</div>
-                ) : error ? (
-                    <div>Error: {error}</div>
-                ) : (
-                    <div className="w-full max-w-md">
-                        <h1 className="text-2xl font-bold mb-4">User Profile</h1>
-                        <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                            <div className="flex gap-4 items-center mb-4">
-                                <Avatar
-                                    size={"xl"}
-                                    shape={"rounded"}
-                                    src={user?.profilePicPath || "https://avatar.iran.liara.run/public/boy"}
-                                    alt="profile-picture"
-                                />
-                                <h2 className="text-xl font-semibold mb-2">{user?.name}</h2>
-                            </div>
-
-                            <p>Email: {user?.email}</p>
-                            <p>Member since: {user?.timeCreated ? new Date(user.timeCreated).toLocaleDateString() : "Unknown"}</p>
-
-                            {isCurrentUser&& (
-                                <div className="mt-4">
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Change Profile Picture
-                                    </label>
+        <PageLayout pageTitle={`${user.name}'s Den`} contentMaxWidth="max-w-2xl">
+            <Card className="w-full shadow-xl overflow-hidden">
+                <CardHeader
+                    floated={false}
+                    shadow={false}
+                    color="transparent"
+                    className="m-0 rounded-none bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-700 dark:to-indigo-700 p-6"
+                >
+                    <div className="flex flex-col sm:flex-row items-center gap-6">
+                        <div className="relative group">
+                            <Avatar
+                                size="xxl"
+                                shape="circular"
+                                src={user.profilePicPath || "https://avatar.iran.liara.run/public/boy?username=" + user.name}
+                                alt={`${user.name}'s profile picture`}
+                                className="border-4 border-white dark:border-gray-800 shadow-lg"
+                            />
+                            {isCurrentUser && (
+                                <label
+                                    htmlFor="profilePicInput"
+                                    className="absolute bottom-1 right-1 bg-white dark:bg-gray-700 p-2 rounded-full cursor-pointer shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors group-hover:opacity-100 opacity-75"
+                                >
+                                    <PencilIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                                     <input
+                                        id="profilePicInput"
+                                        ref={fileInputRef}
                                         type="file"
                                         accept="image/*"
                                         onChange={handleProfilePicUpload}
-                                        className="mt-2"
+                                        className="sr-only"
                                         disabled={uploading}
                                     />
-                                    {uploading && <p>Uploading...</p>}
-                                </div>
+                                </label>
                             )}
                         </div>
+                        <div className="text-center sm:text-left">
+                            <Typography variant="h3" color="white" className="font-bold">
+                                {user.name}
+                            </Typography>
+                            <Typography color="gray" className="font-normal text-gray-200 dark:text-gray-300">
+                                {user.email}
+                            </Typography>
+                            <Typography color="gray" className="font-normal text-sm text-gray-300 dark:text-gray-400 mt-1">
+                                Joined on: {new Date(user.timeCreated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                            </Typography>
+                        </div>
                     </div>
-                )}
-            </main>
-        </div>
+                    {isCurrentUser && uploading && (
+                        <div className="mt-4 flex items-center justify-center text-white">
+                            <Spinner color="white" className="h-4 w-4 mr-2" /> Uploading picture...
+                        </div>
+                    )}
+                    {isCurrentUser && uploadError && (
+                        <Alert color="red" icon={<ExclamationTriangleIcon className="h-5 w-5" />} className="mt-4 text-sm">
+                            {uploadError}
+                        </Alert>
+                    )}
+                </CardHeader>
+
+                <CardBody className="p-6 space-y-8">
+                    {/* Bio Section - Placeholder for now or simple display */}
+                    <div>
+                        <Typography variant="h5" color="blue-gray" className="mb-3 font-semibold">
+                            About Me
+                        </Typography>
+                        {isCurrentUser ? (
+                            <Textarea
+                                label="Your Bio"
+                                defaultValue={user.bio || ""}
+                                // Add onChange and save logic here
+                                rows={4}
+                                className="dark:text-gray-200"
+                                crossOrigin={undefined}
+                            />
+                        ) : (
+                            <Typography className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
+                                {user.bio || <span className="italic text-gray-500 dark:text-gray-400">No bio provided yet.</span>}
+                            </Typography>
+                        )}
+                        {isCurrentUser && <Button size="sm" variant="outlined" color="purple" className="mt-2">Save Bio</Button> /* Placeholder save */}
+                    </div>
+
+                    {/* User's Commissions Section - Placeholder */}
+                    <div>
+                        <Typography variant="h5" color="blue-gray" className="mb-3 font-semibold">
+                            My Commissions
+                        </Typography>
+                        <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg text-center">
+                            <PhotoIcon className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
+                            <Typography className="text-gray-600 dark:text-gray-400">
+                                {isCurrentUser ? "You haven't posted any commissions yet." : `${user.name} hasn't posted any commissions yet.`}
+                            </Typography>
+                            {isCurrentUser && <Button color="purple" className="mt-4">Create New Commission</Button>}
+                        </div>
+                    </div>
+
+                    {/* Add more sections as needed: Settings, Activity, etc. */}
+                </CardBody>
+            </Card>
+        </PageLayout>
     );
 }
 

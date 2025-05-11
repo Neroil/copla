@@ -7,6 +7,7 @@ import Login from "./pages/Login.tsx";
 import Register from "./pages/Register.tsx";
 import UserProfile from "./pages/UserProfile.tsx";
 import UserList from "./pages/UserList.tsx";
+import {ThemeProvider} from "@material-tailwind/react";
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
