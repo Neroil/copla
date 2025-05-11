@@ -63,15 +63,15 @@ function Register() {
             <main className="p-4 flex justify-center items-center grow w-full">
                 <Card className="w-full max-w-md">
                     <CardBody>
-                        <Typography variant="h5" color="blue-gray" className="mb-4 text-center">
+                        <Typography type="h5" color="primary" className="mb-4 text-center">
                             Register
                         </Typography>
-                        {error && <Typography color="red" className="mb-4 text-center text-sm">{error}</Typography>}
-                        {success && <Typography color="green" className="mb-4 text-center text-sm">{success}</Typography>}
+                        {error && <Typography color="warning" className="mb-4 text-center text-sm">{error}</Typography>}
+                        {success && <Typography color="success" className="mb-4 text-center text-sm">{success}</Typography>}
                         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                             <Input
                                 type="text"
-                                label="Username"
+                                placeholder="Username"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 size="lg"
@@ -79,7 +79,7 @@ function Register() {
                             />
                             <Input
                                 type="email"
-                                label="Email"
+                                placeholder="Email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 size="lg"
@@ -87,7 +87,7 @@ function Register() {
                             />
                             <Input
                                 type="password"
-                                label="Password"
+                                placeholder="Password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 size="lg"
@@ -95,17 +95,17 @@ function Register() {
                             />
                             <Input
                                 type="password"
-                                label="Confirm Password"
+                                placeholder="Confirm Password"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                 size="lg"
                                 required
                             />
-                            <Button type="submit" fullWidth>
+                            <Button type="submit" isFullWidth={true}>
                                 Register
                             </Button>
                         </form>
-                        <Typography variant="small" className="mt-6 flex justify-center">
+                        <Typography type="small" className="mt-6 flex justify-center">
                             Already have an account?
                             <a
                                 href="/login"
