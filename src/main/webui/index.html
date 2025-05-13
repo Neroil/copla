@@ -1,41 +1,45 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <script>
-      function getCookie(name) {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-        return null;
+<head>
+  <script>
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) {
+        const cookieValue = parts.pop().split(';').shift();
+        return cookieValue || null;
       }
+      return null;
+    }
 
-      // Check for our plaintext username cookie
-      const username = getCookie('username');
-      const isLoggedIn = username !== null;
+    // Check for our plaintext username cookie
+    const username = getCookie('username');
+    // Consider empty string as not logged in (matching backend behavior)
+    const isLoggedIn = username !== null && username !== '';
 
-      localStorage.setItem('preAuthState', JSON.stringify({
-        isLoggedIn: isLoggedIn,
-        username: username
-      }));
-    </script>
-    <script>
-      // Run before any UI renders to prevent flash
-      const storedDarkMode = localStorage.getItem('darkMode');
-      const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    localStorage.setItem('preAuthState', JSON.stringify({
+      isLoggedIn: isLoggedIn,
+      username: isLoggedIn ? username : null // Store null instead of empty string
+    }));
+  </script>
+  <script>
+    // Run before any UI renders to prevent flash
+    const storedDarkMode = localStorage.getItem('darkMode');
+    const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-      if (storedDarkMode === 'true' || (storedDarkMode === null && prefersDarkMode)) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    </script>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Copla - Commission Platform :3</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+    if (storedDarkMode === 'true' || (storedDarkMode === null && prefersDarkMode)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Copla - Commission Platform :3</title>
+</head>
+<body>
+<div id="root"></div>
+<script type="module" src="/src/main.tsx"></script>
+</body>
 </html>
