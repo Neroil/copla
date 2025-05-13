@@ -9,7 +9,6 @@ import {
     CardHeader,
     Spinner,
     Alert,
-    Input,
     Textarea // For Bio
 } from "@material-tailwind/react";
 import { PageLayout } from "../ui-component/PageLayout"; // Adjust path
@@ -128,8 +127,11 @@ function UserProfile() {
     if (error || !user) {
         return (
             <PageLayout pageTitle="Profile Error" contentMaxWidth="max-w-2xl">
-                <Alert color="red" icon={<ExclamationTriangleIcon className="h-5 w-5" />}>
-                    {error || "User data could not be loaded."}
+                <Alert color="error">
+                    <div className="flex items-center">
+                        <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
+                        {error || "User data could not be loaded."}
+                    </div>
                 </Alert>
             </PageLayout>
         );
@@ -142,7 +144,7 @@ function UserProfile() {
                     floated={false}
                     shadow={false}
                     color="transparent"
-                    className="m-0 rounded-none bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-700 dark:to-indigo-700 p-6"
+                    className="m-0 w-full rounded-none bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-700 dark:to-indigo-700 p-6"
                 >
                     <div className="flex flex-col sm:flex-row items-center gap-6">
                         <div className="relative group">
@@ -172,25 +174,28 @@ function UserProfile() {
                             )}
                         </div>
                         <div className="text-center sm:text-left">
-                            <Typography variant="h3" color="white" className="font-bold">
+                            <Typography variant="h3" className="font-bold">
                                 {user.name}
                             </Typography>
-                            <Typography color="gray" className="font-normal text-gray-200 dark:text-gray-300">
+                            <Typography className="font-normal text-gray-200 dark:text-gray-300">
                                 {user.email}
                             </Typography>
-                            <Typography color="gray" className="font-normal text-sm text-gray-300 dark:text-gray-400 mt-1">
+                            <Typography className="font-normal text-sm text-gray-300 dark:text-gray-400 mt-1">
                                 Joined on: {new Date(user.timeCreated).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                             </Typography>
                         </div>
                     </div>
                     {isCurrentUser && uploading && (
                         <div className="mt-4 flex items-center justify-center text-white">
-                            <Spinner color="white" className="h-4 w-4 mr-2" /> Uploading picture...
+                            <Spinner color="secondary" className="h-4 w-4 mr-2" /> Uploading picture...
                         </div>
                     )}
                     {isCurrentUser && uploadError && (
-                        <Alert color="red" icon={<ExclamationTriangleIcon className="h-5 w-5" />} className="mt-4 text-sm">
-                            {uploadError}
+                        <Alert color="error">
+                            <div className="flex items-center">
+                                <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
+                                {error || "Upload failed !"}
+                            </div>
                         </Alert>
                     )}
                 </CardHeader>
@@ -198,29 +203,28 @@ function UserProfile() {
                 <CardBody className="p-6 space-y-8">
                     {/* Bio Section - Placeholder for now or simple display */}
                     <div>
-                        <Typography variant="h5" color="blue-gray" className="mb-3 font-semibold">
+                        <Typography variant="h5" color="primary" className="mb-3 font-semibold">
                             About Me
                         </Typography>
                         {isCurrentUser ? (
                             <Textarea
-                                label="Your Bio"
+                                placeholder="Your Bio"
                                 defaultValue={user.bio || ""}
                                 // Add onChange and save logic here
                                 rows={4}
                                 className="dark:text-gray-200"
-                                crossOrigin={undefined}
                             />
                         ) : (
                             <Typography className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
                                 {user.bio || <span className="italic text-gray-500 dark:text-gray-400">No bio provided yet.</span>}
                             </Typography>
                         )}
-                        {isCurrentUser && <Button size="sm" variant="outlined" color="purple" className="mt-2">Save Bio</Button> /* Placeholder save */}
+                        {isCurrentUser && <Button size="sm" variant="outline" color="primary" className="mt-2">Save Bio</Button> /* Placeholder save */}
                     </div>
 
                     {/* User's Commissions Section - Placeholder */}
                     <div>
-                        <Typography variant="h5" color="blue-gray" className="mb-3 font-semibold">
+                        <Typography variant="h5" color="primary" className="mb-3 font-semibold">
                             My Commissions
                         </Typography>
                         <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg text-center">
@@ -228,7 +232,7 @@ function UserProfile() {
                             <Typography className="text-gray-600 dark:text-gray-400">
                                 {isCurrentUser ? "You haven't posted any commissions yet." : `${user.name} hasn't posted any commissions yet.`}
                             </Typography>
-                            {isCurrentUser && <Button color="purple" className="mt-4">Create New Commission</Button>}
+                            {isCurrentUser && <Button color="primary" className="mt-4">Create New Commission</Button>}
                         </div>
                     </div>
 

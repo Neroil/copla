@@ -76,7 +76,7 @@ function UserList() {
     if (error) {
         return (
             <PageLayout pageTitle="Artist Directory" contentMaxWidth="max-w-2xl">
-                <Alert color="red" icon={<ExclamationTriangleIcon className="h-5 w-5" />}>
+                <Alert color="error" icon={<ExclamationTriangleIcon className="h-5 w-5" />}>
                     Error: {error}
                 </Alert>
             </PageLayout>
@@ -93,13 +93,13 @@ function UserList() {
                 >
                     <div className="flex items-center gap-3">
                         <UsersIcon className="w-10 h-10 text-white" />
-                        <Typography type="h4" color="white">
+                        <Typography type="h4" >
                             Browse Artists
                         </Typography>
                     </div>
                     <div className="w-full sm:w-72 mt-4 sm:mt-0">
                         <Input
-                            label="Search Artists"
+                            placeholder="Search Artists"
                             icon={<MagnifyingGlassIcon className="h-5 w-5" />}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -130,10 +130,10 @@ function UserList() {
                                         </div>
                                         {/* Main Content */}
                                         <div className="flex-grow">
-                                            <Typography type="h6" color="blue-gray" className="dark:text-gray-200">
+                                            <Typography type="h6" className="dark:text-gray-200">
                                                 {user.name}
                                             </Typography>
-                                            <Typography type="small" color="gray" className="font-normal dark:text-gray-400">
+                                            <Typography type="small" className="font-normal dark:text-gray-400">
                                                 Joined: {new Date(user.timeCreated).toLocaleDateString()}
                                             </Typography>
                                         </div>

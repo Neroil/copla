@@ -50,7 +50,7 @@ public class ImageResource {
 
             Files.copy(file.uploadedFile(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 
-            String imageUrl = "api/images/view/" + fileName;
+            String imageUrl = "/api/images/view/" + fileName;
             return Response.ok().entity("{\"url\":\"" + imageUrl + "\"}").build();
         } catch (IOException e) {
             return Response.serverError().entity("{\"error\":\"" + e.getMessage() + "\"}").build();
@@ -81,7 +81,7 @@ public class ImageResource {
             User user = User.findByUsername(username);
             if (user != null) {
                 log.info("User found: " + user.name);
-                user.profilePicPath = "api/images/view/" + fileName;
+                user.profilePicPath = "/api/images/view/" + fileName;
                 user.persist();
             }
         }
