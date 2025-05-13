@@ -7,12 +7,11 @@ interface AuthStatus {
 }
 
 export function useAuthStatus(): AuthStatus {
-
     // Check preAuth state from localStorage first
     const preAuthData = localStorage.getItem('preAuthState');
     const preAuthState = preAuthData ? JSON.parse(preAuthData) : null;
 
-    // Initial state - start with no username and loading
+    // Initial state with cookie's values
     const [username, setUsername] = useState<string | null>((preAuthState && preAuthState.username && preAuthState.username !== '') ? preAuthState.username : null);
     const [loading, setLoading] = useState(false);
 
