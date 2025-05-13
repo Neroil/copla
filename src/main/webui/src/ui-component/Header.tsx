@@ -4,6 +4,7 @@ import { useAuthStatus } from "../resources/AuthStatus.tsx";
 // Helper: Logout function
 function logout() {
     document.cookie = `quarkus-credential=; Max-Age=0;path=/`;
+    document.cookie = `username=; Max-Age=0;path=/`;
     window.location.href = '/';
 }
 
@@ -213,7 +214,7 @@ function Header() {
                             <ul className="flex items-center space-x-2">
                                 {currentNavItems.map(item => (
                                     <li key={item.id}>
-                                        <NavLink item={item} isMobile={false} username={username} />
+                                        <NavLink item={item} isMobile={false} username={username || undefined} />
                                     </li>
                                 ))}
                             </ul>
@@ -250,7 +251,7 @@ function Header() {
                         <ul className="flex flex-col space-y-3">
                             {currentNavItems.map(item => (
                                 <li key={item.id}>
-                                    <NavLink item={item} isMobile={true} username={username} />
+                                    <NavLink item={item} isMobile={true} username={username || undefined} />
                                 </li>
                             ))}
                         </ul>

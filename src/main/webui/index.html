@@ -1,6 +1,34 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script>
+      function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+      }
+
+      // Check for our plaintext username cookie
+      const username = getCookie('username');
+      const isLoggedIn = username !== null;
+
+      localStorage.setItem('preAuthState', JSON.stringify({
+        isLoggedIn: isLoggedIn,
+        username: username
+      }));
+    </script>
+    <script>
+      // Run before any UI renders to prevent flash
+      const storedDarkMode = localStorage.getItem('darkMode');
+      const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+      if (storedDarkMode === 'true' || (storedDarkMode === null && prefersDarkMode)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    </script>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
