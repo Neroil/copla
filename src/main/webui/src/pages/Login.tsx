@@ -35,12 +35,11 @@ function Login() {
             <Card className="w-full shadow-2xl">
                 <CardHeader
                     variant="gradient"
-                    color="purple"
                     className="mb-4 grid h-28 place-items-center"
                 >
                     <div className="flex flex-col items-center">
                         <LockClosedIcon className="w-12 h-12 text-white mb-2" />
-                        <Typography variant="h4" color="white">
+                        <Typography variant="h4" >
                             Sign In
                         </Typography>
                     </div>
@@ -48,7 +47,7 @@ function Login() {
                 <CardBody className="flex flex-col gap-6 p-6">
                     {hasError && (
                         <Alert
-                            color="red"
+                            color="error"
                             icon={<ExclamationTriangleIcon className="h-5 w-5" />}
                             className="mb-4"
                         >
@@ -76,6 +75,7 @@ function Login() {
                             type="submit"
                             className="bg-purple-600 hover:bg-purple-700 text-white font-medium"
                         >
+
                             Sign in
                         </Button>
                     </form>
@@ -87,7 +87,6 @@ function Login() {
                             as="a"
                             href="/register"
                             variant="small"
-                            color="purple"
                             className="ml-1 font-bold hover:underline"
                         >
                             Register Here

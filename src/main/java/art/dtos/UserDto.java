@@ -8,5 +8,7 @@ public class UserDto {
     public String email;
     public LocalDateTime timeCreated;
     public String profilePicPath;
+    public String bio;
+    public SocialProfileDto[] socialProfiles;
 }
 

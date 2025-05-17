@@ -11,12 +11,21 @@ import {
 } from "@material-tailwind/react";
 import { PageLayout } from "../ui-component/PageLayout"; // Adjust path
 
+// This interface should ideally be in a shared types file
+interface SocialProfile {
+    platform: string;
+    username: string;
+    profileUrl: string;
+    isVerified: boolean;
+}
+
 interface UserData {
     id: number;
     name: string;
     email: string;
     timeCreated: string;
     profilePicPath?: string;
+    socialProfiles?: SocialProfile[]; // Added for consistency, though not displayed in list yet
 }
 
 // Placeholder Icons
@@ -68,7 +77,7 @@ function UserList() {
     );
 
     if (loading) {
-        return <PageLayout isLoading={true} loadingText="Fetching artist directory..." contentMaxWidth="max-w-2xl" />;
+        return <PageLayout isLoading={true} loadingText="Fetching artist directory..." contentMaxWidth="max-w-2xl" children={undefined} />;
     }
 
     if (error) {
@@ -85,13 +94,13 @@ function UserList() {
         <PageLayout pageTitle="Artist Directory" contentMaxWidth="max-w-2xl">
             <Card className="w-full shadow-xl">
                 <CardHeader
-                    type="gradient"
+                    variant="gradient" // Modernized prop
                     color="purple"
                     className="mb-4 p-6 flex flex-col sm:flex-row justify-between items-center"
                 >
                     <div className="flex items-center gap-3">
                         <UsersIcon className="w-10 h-10 text-white" />
-                        <Typography type="h4" >
+                        <Typography variant="h4" > {/* Added color="white" for better contrast on gradient */}
                             Browse Artists
                         </Typography>
                     </div>
@@ -113,12 +122,11 @@ function UserList() {
                     {filteredUsers.length > 0 ? (
                         <List>
                             {filteredUsers.map((user) => (
-                                <a href={`/users/${user.name}`} key={user.id} className="text-initial block"> {/* Added block here */}
+                                <a href={`/users/${user.name}`} key={user.id} className="text-initial block">
                                     <ListItem
                                         ripple={true}
                                         className="flex items-center gap-4 py-3 px-4 hover:bg-purple-50 dark:hover:bg-purple-900/50 focus:bg-purple-50 dark:focus:bg-purple-900/50 active:bg-purple-100 dark:active:bg-purple-900"
                                     >
-                                        {/* Manual Prefix Structure */}
                                         <div className="flex-shrink-0">
                                             <Avatar
                                                 shape="circular"
@@ -126,12 +134,11 @@ function UserList() {
                                                 src={user.profilePicPath || `https://avatar.iran.liara.run/public/boy?username=${user.name}`}
                                             />
                                         </div>
-                                        {/* Main Content */}
                                         <div className="flex-grow">
-                                            <Typography type="h6" className="dark:text-gray-200">
+                                            <Typography variant="h6" className="dark:text-gray-200">
                                                 {user.name}
                                             </Typography>
-                                            <Typography type="small" className="font-normal dark:text-gray-400">
+                                            <Typography variant="small" className="font-normal dark:text-gray-400">
                                                 Joined: {new Date(user.timeCreated).toLocaleDateString()}
                                             </Typography>
                                         </div>
