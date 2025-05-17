@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuthStatus } from "../resources/AuthStatus.tsx";
+import { CoPlaIcon } from "./PageLayout.tsx";
 
 // Helper: Logout function
 function logout() {
@@ -196,14 +197,7 @@ function Header() {
                             href="/"
                             className="group flex items-center gap-2 text-2xl font-semibold tracking-tighter"
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="currentColor"
-                                className="w-8 h-8 text-purple-500 dark:text-purple-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors duration-300"
-                            >
-                                <path d="M6.75 2.5C7.44 2.5 8 3.06 8 3.75C8 4.44 7.44 5 6.75 5S5.5 4.44 5.5 3.75C5.5 3.06 6.06 2.5 6.75 2.5ZM4.25 5.5C4.94 5.5 5.5 6.06 5.5 6.75C5.5 7.44 4.94 8 4.25 8S3 7.44 3 6.75C3 6.06 3.56 5.5 4.25 5.5ZM9.25 5.5C9.94 5.5 10.5 6.06 10.5 6.75C10.5 7.44 9.94 8 9.25 8S8 7.44 8 6.75C8 6.06 8.56 5.5 9.25 5.5ZM12.5 10.5C11.12 10.5 10 11.62 10 13C10 14.38 11.12 15.5 12.5 15.5C13.88 15.5 15 14.38 15 13C15 11.62 13.88 10.5 12.5 10.5ZM16.08 5.68C16.08 5.68 14.63 7.12 14.63 9.23C14.63 11.04 16.09 12.5 17.91 12.5C18.74 12.5 20.64 11.54 20.19 7.95C20.19 7.95 20.19 7.94 20.19 7.93C20.12 7.54 19.73 7.3 19.34 7.37C19.34 7.37 17.42 7.8 16.91 7.23C16.4 6.67 16.08 5.68 16.08 5.68ZM16.95 15.41C16.66 14.94 16.11 14.77 15.64 15.06C15.17 15.34 15 15.9 15.29 16.37C16.69 18.61 17.87 19.16 18.65 19.37C19.07 19.47 19.5 19.19 19.6 18.78C19.7 18.37 19.42 17.95 19.01 17.84C18.43 17.68 17.51 17.23 16.95 15.41Z" />
-                            </svg>
+                            <CoPlaIcon className="w-8 h-8 text-purple-500 dark:text-purple-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors duration-300" />
                             <span className="bg-gradient-to-r from-purple-500 via-indigo-400 to-teal-400 dark:from-purple-400 dark:via-indigo-300 dark:to-teal-300 bg-clip-text text-transparent transition-colors duration-300">
                                 CoPla
                             </span>

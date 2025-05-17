@@ -101,27 +101,21 @@ function Register() {
                 >
                     <div className="flex flex-col items-center">
                         <UserPlusIcon className="w-12 h-12 text-white mb-2" />
-                        <Typography variant="h4" color="white">
+                        <Typography variant="h4">
                             Create Account
                         </Typography>
                     </div>
                 </CardHeader>
                 <CardBody className="flex flex-col gap-6 p-6">
                     {error && (
-                        <Alert
-                            color="red"
-                            icon={<ExclamationTriangleIcon className="h-5 w-5" />}
-                            className="mb-4"
-                        >
+                        <Alert color="error" className="mb-4">
+                            <ExclamationTriangleIcon className="h-5 w-5 inline-block mr-2" />
                             {error}
                         </Alert>
                     )}
                     {success && (
-                        <Alert
-                            color="green"
-                            icon={<CheckCircleIcon className="h-5 w-5" />}
-                            className="mb-4"
-                        >
+                        <Alert color="success" className="mb-4">
+                            <CheckCircleIcon className="h-5 w-5 inline-block mr-2" />
                             {success}
                         </Alert>
                     )}
@@ -133,7 +127,6 @@ function Register() {
                             onChange={(e) => setUsername(e.target.value)}
                             size="lg"
                             required
-                            crossOrigin={undefined}
                         />
                         <Input
                             type="email"
@@ -142,7 +135,6 @@ function Register() {
                             onChange={(e) => setEmail(e.target.value)}
                             size="lg"
                             required
-                            crossOrigin={undefined}
                         />
                         <Input
                             type="password"
@@ -151,7 +143,6 @@ function Register() {
                             onChange={(e) => setPassword(e.target.value)}
                             size="lg"
                             required
-                            crossOrigin={undefined}
                         />
                         <Input
                             type="password"
@@ -160,10 +151,14 @@ function Register() {
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             size="lg"
                             required
-                            crossOrigin={undefined}
                         />
-                        <Button type="submit" color="purple" fullWidth disabled={isLoading}>
-                            {isLoading ? <Spinner className="h-5 w-5 mx-auto" /> : "Register"}
+                        <Button
+                            type="submit"
+                            className="bg-purple-600 hover:bg-purple-700 text-white font-medium"
+                            fullWidth
+                            disabled={isLoading}
+                        >
+                            {isLoading ? <Spinner className="h-5 w-5 mx-auto text-white" /> : "Register"}
                         </Button>
                     </form>
                 </CardBody>
@@ -173,8 +168,6 @@ function Register() {
                         <Typography
                             as="a"
                             href="/login"
-                            variant="small"
-                            color="purple"
                             className="ml-1 font-bold hover:underline"
                         >
                             Sign In

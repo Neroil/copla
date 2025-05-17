@@ -35,7 +35,7 @@ function Login() {
             <Card className="w-full shadow-2xl">
                 <CardHeader
                     variant="gradient"
-                    color="purple" // Or your theme's primary color
+                    color="purple"
                     className="mb-4 grid h-28 place-items-center"
                 >
                     <div className="flex flex-col items-center">
@@ -72,8 +72,11 @@ function Login() {
                             required
                             crossOrigin={undefined}
                         />
-                        <Button type="submit" color="purple" fullWidth>
-                            Sign In
+                        <Button
+                            type="submit"
+                            className="bg-purple-600 hover:bg-purple-700 text-white font-medium"
+                        >
+                            Sign in
                         </Button>
                     </form>
                 </CardBody>

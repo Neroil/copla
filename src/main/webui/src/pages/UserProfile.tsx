@@ -49,7 +49,7 @@ function UserProfile() {
     const [uploadError, setUploadError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const { userId } = useParams<{ userId: string }>(); // Ensure userId is typed
+    const { userId } = useParams<{ userId: string }>();
 
     useEffect(() => {
         async function fetchUserData() {
@@ -174,7 +174,7 @@ function UserProfile() {
                             )}
                         </div>
                         <div className="text-center sm:text-left">
-                            <Typography variant="h3" className="font-bold">
+                            <Typography variant="h3" className="font-bold text-white dark:text-gray-200">
                                 {user.name}
                             </Typography>
                             <Typography className="font-normal text-gray-200 dark:text-gray-300">
@@ -203,7 +203,7 @@ function UserProfile() {
                 <CardBody className="p-6 space-y-8">
                     {/* Bio Section - Placeholder for now or simple display */}
                     <div>
-                        <Typography variant="h5" color="primary" className="mb-3 font-semibold">
+                        <Typography variant="h5" color="primary" className="mb-3 font-semibold text-[#fffff] dark:text-gray-200">
                             About Me
                         </Typography>
                         {isCurrentUser ? (
@@ -219,12 +219,12 @@ function UserProfile() {
                                 {user.bio || <span className="italic text-gray-500 dark:text-gray-400">No bio provided yet.</span>}
                             </Typography>
                         )}
-                        {isCurrentUser && <Button size="sm" variant="outline" color="primary" className="mt-2">Save Bio</Button> /* Placeholder save */}
+                        {isCurrentUser && <Button size="sm" variant="outline" color="primary" className="mt-2 text-[#fffff] dark:text-gray-200">Save Bio</Button> /* Placeholder save */}
                     </div>
 
                     {/* User's Commissions Section - Placeholder */}
                     <div>
-                        <Typography variant="h5" color="primary" className="mb-3 font-semibold">
+                        <Typography variant="h5" color="primary" className="mb-3 font-semibold text-[#fffff] dark:text-gray-200">
                             My Commissions
                         </Typography>
                         <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg text-center">
@@ -232,7 +232,7 @@ function UserProfile() {
                             <Typography className="text-gray-600 dark:text-gray-400">
                                 {isCurrentUser ? "You haven't posted any commissions yet." : `${user.name} hasn't posted any commissions yet.`}
                             </Typography>
-                            {isCurrentUser && <Button color="primary" className="mt-4">Create New Commission</Button>}
+                            {isCurrentUser && <Button color="primary" className="mt-4 text-gray-800 dark:text-[#fffff]">Create New Commission</Button>}
                         </div>
                     </div>
 
