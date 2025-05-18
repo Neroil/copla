@@ -344,7 +344,7 @@ function UserProfile() {
                         )}
                         {isCurrentUser && <Button size="sm" variant="solid" // Use filled for primary actions
 
-                            className="mt-4">Save
+                            className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black mt-4">Save
                             Bio</Button>}
                     </div>
 
@@ -408,7 +408,7 @@ function UserProfile() {
                             <Button
                                 size="sm"
                                 variant="solid"
-                                className="mt-4"
+                                className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black mt-4"
                                 onClick={() => setShowManageSocials(true)}
                             >
                                 Manage Socials
@@ -491,7 +491,7 @@ function UserProfile() {
                             </Typography>
                             {isCurrentUser && <Button
                                 variant="solid"
-                                className="mt-4">Create
+                                className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black mt-4">Create
                                 New Commission</Button>}
                         </div>
                     </div>

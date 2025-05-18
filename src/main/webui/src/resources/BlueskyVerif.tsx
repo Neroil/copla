@@ -208,7 +208,7 @@ const BlueskyVerif: React.FC<BlueskyVerifProps> = ({ appUsername, onClose, onSuc
                                 </Typography>
                                 <Button
                                     size="lg"
-                                    className="mt-4"
+                                    className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black mt-4"
                                     onClick={handleAuthenticate}
                                 >
                                     Connect to Bluesky
@@ -264,7 +264,7 @@ const BlueskyVerif: React.FC<BlueskyVerifProps> = ({ appUsername, onClose, onSuc
                 )}
 
                 <div className="flex justify-end mt-2">
-                    <Button onClick={onClose} disabled={loading}>
+                    <Button className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black" onClick={onClose} disabled={loading}>
                         Cancel
                     </Button>
                 </div>

@@ -92,10 +92,10 @@ const ManageBluesky: React.FC<ManageBlueskyProps> = ({ username, onClose, onSucc
                             />
                         </div>
                         <div className="flex gap-2 mt-2">
-                            <Button type="submit" disabled={loading} isFullWidth={true}>
+                            <Button className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black" type="submit" disabled={loading} isFullWidth={true}>
                                 {loading ? <Spinner className="h-4 w-4" /> : "Save"}
                             </Button>
-                            <Button type="button" onClick={onClose} isFullWidth={true}>
+                            <Button className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black" type="button" onClick={onClose} isFullWidth={true}>
                                 Cancel
                             </Button>
                         </div>
@@ -111,13 +111,13 @@ const ManageBluesky: React.FC<ManageBlueskyProps> = ({ username, onClose, onSucc
             <CardBody>
                 <Typography variant="h5" className="mb-6 text-center">Add Bluesky Account</Typography>
                 <div className="flex flex-col gap-4">
-                    <Button  onClick={() => setMode("verify")} isFullWidth>
+                    <Button className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black" onClick={() => setMode("verify")} isFullWidth>
                         Add & Verify Bluesky Account
                     </Button>
-                    <Button  onClick={() => setMode("manual")} isFullWidth>
+                    <Button className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black" onClick={() => setMode("manual")} isFullWidth>
                         Add Unverified Account (Manual)
                     </Button>
-                    <Button onClick={onClose} isFullWidth>
+                    <Button className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black" onClick={onClose} isFullWidth>
                         Cancel
                     </Button>
                 </div>
