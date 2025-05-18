@@ -13,6 +13,8 @@ export default defineConfig({
       tailwindcss(),
   ],
   server: {
+      host: true,
+      allowedHosts: true,
     // this ensures that the browser opens upon server start
     open: false,
     // this sets a default port to 3000, you can change this

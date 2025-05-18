@@ -14,6 +14,7 @@ import {
 } from "@material-tailwind/react";
 import {PageLayout} from "../ui-component/PageLayout"; // Adjust path
 import ManageBluesky from "../ui-component/ManageBluesky";
+import BlueskyVerif from "../resources/BlueskyVerif.tsx";
 
 interface SocialProfile {
     platform: string; // e.g., "bluesky", "twitter", "github"
@@ -66,6 +67,34 @@ const SocialVerificationBadge = ({
             )}
         </div>
     );
+};
+
+const fetchUserData = async () => {
+    if (!userId) {
+        setError("User ID is missing.");
+        setLoading(false);
+        return;
+    }
+    try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch(`/api/users/${userId}`);
+        if (!response.ok) {
+            throw new Error(`User not found or server error (${response.status})`);
+        }
+        const userData = await response.json();
+        setUser(userData);
+
+        const currentUserResponse = await fetch('/api/users/me');
+        if (currentUserResponse.ok) {
+            const currentUserData = await currentUserResponse.json();
+            setIsCurrentUser(currentUserData.username === userData.name);
+        }
+    } catch (err: any) {
+        setError(err.message || 'Failed to fetch user data.');
+    } finally {
+        setLoading(false);
+    }
 };
 
 const getPlatformIcon = (platform: string, className: string) => {
@@ -128,6 +157,7 @@ function UserProfile() {
     const [uploadError, setUploadError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [showManageSocials, setShowManageSocials] = useState(false);
+    const [showBlueskyVerification, setShowBlueskyVerification] = useState(false);
 
     const {userId} = useParams<{ userId: string }>();
 
@@ -338,10 +368,32 @@ function UserProfile() {
                                             isVerified={profile.isVerified}
                                             isCurrentUser={isCurrentUser}
                                             onVerify={() => {
-                                                // Open your verification dialog or logic here
-                                                setShowManageSocials(true);
+                                                if (profile.platform.toLowerCase() === 'bluesky') {
+                                                    setShowBlueskyVerification(true);
+                                                }
                                             }}
                                         />
+
+                                        {showBlueskyVerification && (
+                                            <Dialog
+                                                open={showBlueskyVerification}
+                                                handler={() => setShowBlueskyVerification(false)}
+                                                size="md"
+                                            >
+                                                <BlueskyVerif
+                                                    appUsername={user.name}
+                                                    onClose={() => setShowBlueskyVerification(false)}
+                                                    onSuccess={(message) => {
+                                                        // Show success message
+                                                        alert(message);
+                                                        setShowBlueskyVerification(false);
+
+                                                        // Refresh user data to show updated verification status
+                                                        fetchUserData(); // Make sure to define this function to refresh user data
+                                                    }}
+                                                />
+                                            </Dialog>
+                                        )}
                                     </li>
                                 ))}
                             </ul>

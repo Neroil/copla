@@ -6,4 +6,5 @@ public class SocialProfileDto {
     public String username;
     public String profileUrl;
     public boolean isVerified;
+
 }

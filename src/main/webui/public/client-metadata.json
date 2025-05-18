@@ -1,0 +1,12 @@
+{
+  "client_id": "https://a323-2a02-aa14-f480-f180-1daa-6df3-4e1b-6dc0.ngrok-free.app/client-metadata.json",
+  "client_name": "Bluesky Account Verification",
+  "client_uri": "https://a323-2a02-aa14-f480-f180-1daa-6df3-4e1b-6dc0.ngrok-free.app",
+  "redirect_uris": ["https://a323-2a02-aa14-f480-f180-1daa-6df3-4e1b-6dc0.ngrok-free.app/callback"],
+  "grant_types": ["authorization_code"],
+  "response_types": ["code"],
+  "scope": "atproto transition:generic",
+  "token_endpoint_auth_method": "none",
+  "application_type": "web",
+  "dpop_bound_access_tokens": true
+}
