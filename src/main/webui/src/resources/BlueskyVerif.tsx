@@ -15,6 +15,7 @@ const BlueskyVerif: React.FC<BlueskyVerifProps> = ({ appUsername, onClose, onSuc
     const [status, setStatus] = useState<string>('initial'); // 'initial', 'authenticating', 'authenticated'
     const [profileData, setProfileData] = useState<any>(null);
     const [agent, setAgent] = useState<Agent | null>(null);
+    const [sessionStore, setSessionStore] = useState<Session | null>(null);
 
     // App configuration that can be easily modified
     const appConfig = {
@@ -42,7 +43,6 @@ const BlueskyVerif: React.FC<BlueskyVerifProps> = ({ appUsername, onClose, onSuc
                 setLoading(true);
                 setError(null);
 
-                const clientMetadata = getClientMetadata();
                 const oauthClient = await BrowserOAuthClient.load({
                     clientId: `${appConfig.baseUrl}/client-metadata.json`,
                     handleResolver: 'https://bsky.social/'
@@ -58,6 +58,8 @@ const BlueskyVerif: React.FC<BlueskyVerifProps> = ({ appUsername, onClose, onSuc
 
                     console.log(`The user is currently signed in as ${result.session.did}`);
                     const newAgent = new Agent(result.session);
+                    setSessionStore(result.session);
+
                     setAgent(newAgent);
                     setStatus('authenticated');
 
@@ -90,7 +92,6 @@ const BlueskyVerif: React.FC<BlueskyVerifProps> = ({ appUsername, onClose, onSuc
             setError(null);
             setStatus('authenticating');
 
-            const clientMetadata = getClientMetadata();
             const oauthClient = await BrowserOAuthClient.load({
                 clientId: `${appConfig.baseUrl}/client-metadata.json`,
                 handleResolver: 'https://bsky.social/'
@@ -163,7 +164,7 @@ const BlueskyVerif: React.FC<BlueskyVerifProps> = ({ appUsername, onClose, onSuc
     const handleSignOut = async () => {
         if (agent) {
             try {
-                await agent.signOut();
+                await sessionStore.signOut()
                 setStatus('initial');
                 setAgent(null);
                 setProfileData(null);

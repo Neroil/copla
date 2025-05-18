@@ -178,6 +178,40 @@ public class UserResource {
         return Response.ok(new SuccessResponse("Bluesky account linked successfully")).build();
     }
 
+    @DELETE
+    @Path("/{username}/social/bluesky")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    @Authenticated
+    public Response unlinkBluesky(@PathParam("username") String username) {
+        User user = User.findByUsername(username);
+
+        if (user == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(new ErrorResponse("User not found"))
+                    .build();
+        }
+
+        if (identity.isAnonymous() || !username.equals(identity.getPrincipal().getName())) {
+            return Response.status(Response.Status.FORBIDDEN)
+                    .entity(new ErrorResponse("You are not allowed to unlink a social profile for this user"))
+                    .build();
+        }
+
+        // Find and remove the Bluesky profile regardless of verification status
+        boolean removed = user.socialProfiles.removeIf(profile -> "bluesky".equals(profile.platform));
+
+        if (!removed) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(new ErrorResponse("No Bluesky profile found to unlink"))
+                    .build();
+        }
+
+        user.persist();
+
+        return Response.ok(new SuccessResponse("Bluesky account unlinked successfully")).build();
+    }
+
     public static class BlueskyLinkRequest {
         public String blueskyDid;
         public String blueskyHandle;
