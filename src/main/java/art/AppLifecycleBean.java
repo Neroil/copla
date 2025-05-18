@@ -4,7 +4,6 @@ import art.entities.Artist;
 import art.entities.SocialProfile;
 import art.entities.User;
 import io.quarkus.runtime.StartupEvent;
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Singleton;
 import jakarta.transaction.Transactional;
