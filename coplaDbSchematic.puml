@@ -5,36 +5,38 @@ class "Artist" as A {
 }
 
 class "CommissionRequest" as CR {
-    +id: int
+    +id: double
     +status: Status
-    +created_at: datetime
-    +description: string
+    +created_at: LocalDateTime
+    +description: String
+    +artistCommentary: String
 }
 
 class "Direct Message" as DM {
-    +id: int
-    +content: string
-    +created_at: datetime
+    +id: double
+    +content: String
+    +created_at: LocalDateTime
+    +is_read: boolean
 }
 
 class "User" as U {
-    +id: int
-    +username: string
-    +hashed_password: string
-    +email: string
+    +id: double
+    +username: String
+    +hashed_password: String
+    +email: String
 }
 
 class "Gallery" as G {
-    +id: int
-    +name: string
-    +description: string
+    +id: double
+    +name: String
+    +description: String
 }
 
 class "Artwork" as W {
-    +id: int
+    +id: Long
     +title: String
     +description: String
-    +timeCreated: LocalDateTime
+    +timeCreated: LocalLocalDateTime
     +imageUrl: String
     +price: double
 }

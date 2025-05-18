@@ -2,6 +2,7 @@ package art.entities;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
+import java.time.LocalDateTime;
 import jakarta.persistence.Table;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class Artist extends User {
         artist.role = "artist";
         artist.email = email;
         artist.verified = verified;
+        artist.timeCreated = LocalDateTime.now();
         artist.persist();
     }
 

@@ -1,46 +1,57 @@
 @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 @config "../tailwind.config.js";
 
 :root {
-  --dark-blue: #001f3f; /* Example dark blue */
-  --off-white: #f8f8f8; /* Example off-white */
-  --font-color: #333; /* Example font color */
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
 }
 
+/* Base styles */
 body {
-  background-color: var(--off-white);
-}
-
-.nav{
-  display: flex;
-  justify-content: space-between;
-  gap: 2rem;
-  padding: 1rem;
-}
-
-.nav ul {
-    list-style: none;
-    display: flex;
-    gap: 2rem;
-}
-
-.nav button {
-    background-color: transparent;
-    border: none;
-    color: white;
-    font-size: 1.5rem;
-    cursor: pointer;
-}
-
-.nav h1 {
-
-    font-size: 2rem;
     margin: 0;
+    min-height: 100vh;
 }
 
-body {
-    font-family: 'Arial', sans-serif;
-    color: var(--font-color);
-    margin: 0;
+/* Dark mode */
+.dark body {
+    color-scheme: dark;
+}
+
+/* Prevent FOUC when dark mode is enabled */
+html.dark {
+    color-scheme: dark;
+}
+
+/* Focus styles for accessibility */
+:focus-visible {
+    outline: 2px solid;
+    outline-offset: 2px;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Utility to hide content visually but keep accessible for screen readers */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
     padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
 }

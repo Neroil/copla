@@ -1,4 +1,4 @@
-package art.resources;
+package art.dtos;
 
 public class UserRegistrationDto {
     public String name;
