@@ -11,6 +11,7 @@ import {
 } from "@material-tailwind/react";
 import { PageLayout } from "../ui-component/PageLayout"; // Adjust path as needed
 import React from "react";
+import CustomFormButton from "../ui-component/CustomFormButton";
 
 // Placeholder Icon
 const LockClosedIcon = ({ className }: { className?: string }) => (
@@ -61,7 +62,6 @@ function Login() {
                             name="j_username"
                             size="lg"
                             required
-                            crossOrigin={undefined}
                         />
                         <Input
                             type="password"
@@ -69,15 +69,14 @@ function Login() {
                             name="j_password"
                             size="lg"
                             required
-                            crossOrigin={undefined}
                         />
-                        <Button
+                        <CustomFormButton
                             type="submit"
                             className="bg-purple-600 hover:bg-purple-700 text-white font-medium"
                         >
 
                             Sign in
-                        </Button>
+                        </CustomFormButton>
                     </form>
                 </CardBody>
                 <CardFooter className="pt-2 text-center">
@@ -86,8 +85,8 @@ function Login() {
                         <Typography
                             as="a"
                             href="/register"
-                            variant="small"
-                            className="ml-1 font-bold hover:underline"
+                            type="small"
+                            className="ml-1 font-bold underline hover:text-purple-700 hoverdark:text-purple-400"
                         >
                             Register Here
                         </Typography>

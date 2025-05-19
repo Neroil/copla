@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, Input, Alert, Spinner, Typography, Card, CardBody } from "@material-tailwind/react";
 import BlueskyVerif from "../resources/BlueskyVerif";
+import CustomFormButton from "./CustomFormButton";
 
 interface ManageBlueskyProps {
     username: string;
@@ -92,12 +93,12 @@ const ManageBluesky: React.FC<ManageBlueskyProps> = ({ username, onClose, onSucc
                             />
                         </div>
                         <div className="flex gap-2 mt-2">
-                            <Button className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black" type="submit" disabled={loading} isFullWidth={true}>
+                            <CustomFormButton type="submit" disabled={loading}>
                                 {loading ? <Spinner className="h-4 w-4" /> : "Save"}
-                            </Button>
-                            <Button className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black" type="button" onClick={onClose} isFullWidth={true}>
+                            </CustomFormButton>
+                            <CustomFormButton type="button" onClick={onClose}>
                                 Cancel
-                            </Button>
+                            </CustomFormButton>
                         </div>
                     </form>
                 </CardBody>
@@ -111,15 +112,17 @@ const ManageBluesky: React.FC<ManageBlueskyProps> = ({ username, onClose, onSucc
             <CardBody>
                 <Typography variant="h5" className="mb-6 text-center">Add Bluesky Account</Typography>
                 <div className="flex flex-col gap-4">
-                    <Button className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black" onClick={() => setMode("verify")} isFullWidth>
+                    <CustomFormButton onClick={() => setMode("verify")}>
                         Add & Verify Bluesky Account
-                    </Button>
-                    <Button className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black" onClick={() => setMode("manual")} isFullWidth>
+                    </CustomFormButton>
+
+                    <CustomFormButton onClick={() => setMode("manual")}>
                         Add Unverified Account (Manual)
-                    </Button>
-                    <Button className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black" onClick={onClose} isFullWidth>
+                    </CustomFormButton>
+
+                    <CustomFormButton onClick={onClose}>
                         Cancel
-                    </Button>
+                    </CustomFormButton>
                 </div>
             </CardBody>
         </Card>

@@ -17,6 +17,7 @@ import { PageLayout } from "../ui-component/PageLayout";
 import ManageBluesky from "../ui-component/ManageBluesky";
 import BlueskyVerif from "../resources/BlueskyVerif.tsx";
 import { useFetchUserData } from "../resources/FetchUserData"; // Import the hook
+import CustomFormButton from "../ui-component/CustomFormButton.tsx";
 
 // SocialProfile and UserData interfaces can be removed if they are identical to
 // and imported from FetchUserData.tsx or a shared types file.
@@ -342,10 +343,8 @@ function UserProfile() {
                                 {displayUser.bio || <span className="italic text-gray-500 dark:text-gray-400">No bio provided yet.</span>}
                             </Typography>
                         )}
-                        {isCurrentUser && <Button size="sm" variant="solid" // Use filled for primary actions
-
-                            className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black mt-4">Save
-                            Bio</Button>}
+                        {isCurrentUser && <CustomFormButton isFullWidth={false}
+                            className="mt-4">Save Bio</CustomFormButton>}
                     </div>
 
                     <div>
@@ -404,15 +403,75 @@ function UserProfile() {
                                 {isCurrentUser ? "You haven't linked any social accounts yet." : `${displayUser.name} hasn't linked any social accounts yet.`}
                             </Typography>
                         )}
+                        {/* Unlink Confirmation Dialog */}
+                        {showUnlinkDialog && displayUser && (
+                            <Dialog open={unlinkDialogOpen} handler={() => setUnlinkDialogOpen(false)} size="sm">
+                                <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl mt-4">
+                                    <Typography variant="h5" className="flex items-center text-white">
+                                        <ExclamationTriangleIcon className="h-6 w-6 mr-2" />
+                                        Confirm Unlink
+                                    </Typography>
+                                </div>
+                                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                                    <Typography className="text-gray-700 dark:text-gray-300 mb-3">
+                                        Are you sure you want to unlink your <span className="font-semibold text-purple-600 dark:text-purple-400 capitalize">{unlinkingPlatform}</span> account?
+                                    </Typography>
+                                    <Typography className="text-sm text-gray-600 dark:text-gray-400">
+                                        This action cannot be undone. You will need to re-link and verify your account later if you wish to reconnect it.
+                                    </Typography>
+                                    {unlinkError && (
+                                        <Alert color="error" variant="gradient" className="mt-4 border border-red-300 shadow-sm">
+                                            <div className="flex items-center">
+                                                <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
+                                                {unlinkError}
+                                            </div>
+                                        </Alert>
+                                    )}
+                                </div>
+                                <div className="flex justify-end gap-3 p-6">
+                                    <CustomFormButton
+                                        isFullWidth={false}
+                                        className="bg-gray-500 hover:bg-gray-600 dark:bg-gray-500 dark:hover:bg-gray-600 dark:text-white"
+                                        onClick={() => {
+                                            setUnlinkDialogOpen(false);
+                                            setUnlinkError(null);
+                                            setShowUnlinkDialog(false);
+                                        }}
+                                    >
+                                        Cancel
+                                    </CustomFormButton>
+                                    <CustomFormButton
+                                        isFullWidth={false}
+                                        className="bg-red-500 hover:bg-red-600 dark:bg-red-500 dark:hover:bg-red-600 dark:text-white"
+                                        onClick={confirmUnlinkSocial}
+                                        disabled={unlinkLoading}
+                                    >
+                                        {unlinkLoading ? (
+                                            <div className="flex items-center justify-center">
+                                                <Spinner className="h-4 w-4 mr-2" />
+                                                Unlinking...
+                                            </div>
+                                        ) : (
+                                            "Unlink"
+                                        )}
+                                    </CustomFormButton>
+                                </div>
+                            </Dialog>
+                        )}
                         {isCurrentUser && (
-                            <Button
-                                size="sm"
-                                variant="solid"
-                                className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black mt-4"
-                                onClick={() => setShowManageSocials(true)}
+                            <CustomFormButton
+                                isFullWidth={false}
+                                onClick={() => {
+                                    if (showManageSocials === true) {
+                                        setShowManageSocials(false); // Close if already open
+                                    } else {
+                                        setShowManageSocials(true);
+                                    }
+                                }}
+                                className="mt-4"
                             >
                                 Manage Socials
-                            </Button>
+                            </CustomFormButton>
                         )}
 
                         {showManageSocials && displayUser && (
@@ -448,35 +507,7 @@ function UserProfile() {
                                 />
                             </Dialog>
                         )}
-                        {/* Unlink Confirmation Dialog */}
-                        {showUnlinkDialog && displayUser && (
-                        <Dialog open={unlinkDialogOpen} handler={() => setUnlinkDialogOpen(false)} size="sm">
-                            <div className="p-4 border-b">
-                                <Typography variant="h5">Confirm Unlink</Typography>
-                            </div>
-                            <div className="p-4 border-b">
-                                <Typography>
-                                    Are you sure you want to unlink your {unlinkingPlatform} account?
-                                </Typography>
-                                {unlinkError && <Alert color="error" className="mt-2">{unlinkError}</Alert>}
-                            </div>
-                            <div className="flex justify-end gap-2 p-4">
-                                <Button
-                                    onClick={() => { setUnlinkDialogOpen(false); setUnlinkError(null); setShowUnlinkDialog(false); }}
-                                >
-                                    <span>Cancel</span>
-                                </Button>
-                                <Button
-                                    variant="gradient"
-                                    color="error"
-                                    onClick={confirmUnlinkSocial}
-                                    loading={unlinkLoading}
-                                >
-                                    <span>Unlink</span>
-                                </Button>
-                            </div>
-                        </Dialog>
-                        )}
+                        
                     </div>
 
 
@@ -489,10 +520,11 @@ function UserProfile() {
                             <Typography className="text-gray-600 dark:text-gray-400">
                                 {isCurrentUser ? "You haven't posted any commissions yet." : `${displayUser.name} hasn't posted any commissions yet.`}
                             </Typography>
-                            {isCurrentUser && <Button
+                            {isCurrentUser && <CustomFormButton
+                                isFullWidth={false}
                                 variant="solid"
-                                className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black mt-4">Create
-                                New Commission</Button>}
+                                className="mt-4">Create
+                                New Commission</CustomFormButton>}
                         </div>
                     </div>
                 </CardBody>

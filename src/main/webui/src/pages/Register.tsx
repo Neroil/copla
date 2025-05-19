@@ -11,6 +11,7 @@ import {
     Spinner
 } from "@material-tailwind/react";
 import { PageLayout } from "../ui-component/PageLayout"; // Adjust path as needed
+import CustomFormButton from '../ui-component/CustomFormButton';
 
 // Placeholder Icons
 const UserPlusIcon = ({ className }: { className?: string }) => (
@@ -152,14 +153,14 @@ function Register() {
                             size="lg"
                             required
                         />
-                        <Button
+                        <CustomFormButton
                             type="submit"
                             className="bg-purple-600 hover:bg-purple-700 text-white font-medium"
-                            fullWidth
+                            isFullWidth={true}
                             disabled={isLoading}
                         >
                             {isLoading ? <Spinner className="h-5 w-5 mx-auto text-white" /> : "Register"}
-                        </Button>
+                        </CustomFormButton>
                     </form>
                 </CardBody>
                 <CardFooter className="pt-2 text-center">
