@@ -18,6 +18,7 @@ import ManageBluesky from "../ui-component/ManageBluesky";
 import BlueskyVerif from "../resources/BlueskyVerif.tsx";
 import { useFetchUserData } from "../resources/FetchUserData"; // Import the hook
 import CustomFormButton from "../ui-component/CustomFormButton.tsx";
+import { UserIcon, PaletteIcon } from "../ui-component/CustomIcons";
 
 // SocialProfile and UserData interfaces can be removed if they are identical to
 // and imported from FetchUserData.tsx or a shared types file.
@@ -37,6 +38,7 @@ interface UserData { // This is the type expected by the component's rendering l
     profilePicPath?: string;
     bio?: string;
     socialProfiles?: SocialProfile[];
+    role?: string;
 }
 
 
@@ -132,7 +134,7 @@ function UserProfile() {
     const { userId: userIdFromParams } = useParams<{ userId: string }>();
 
     const {
-        user, // This will be of type User from FetchUserData.tsx, cast to UserData if needed
+        user,
         loading,
         error,
         isCurrentUser,
@@ -140,17 +142,22 @@ function UserProfile() {
         fetchData: refreshUserData,
     } = useFetchUserData();
 
-    // Component-specific state
+    // Profile picture upload related states
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Manage Bluesky related states
     const [showManageSocials, setShowManageSocials] = useState(false);
     const [showBlueskyVerification, setShowBlueskyVerification] = useState(false);
-    const [unlinkingPlatform, setUnlinkingPlatform] = useState<string | null>(null); // For unlink dialog
+
+    // Unlinking related states
+    const [unlinkingPlatform, setUnlinkingPlatform] = useState<string | null>(null);
     const [unlinkDialogOpen, setUnlinkDialogOpen] = useState(false);
     const [unlinkLoading, setUnlinkLoading] = useState(false);
     const [unlinkError, setUnlinkError] = useState<string | null>(null);
     const [showUnlinkDialog, setShowUnlinkDialog] = useState(false);
+    const [unlinkingUsername, setUnlinkingUsername] = useState<string | null>(null);
 
     useEffect(() => {
         if (userIdFromParams) {
@@ -190,44 +197,45 @@ function UserProfile() {
         }
     };
 
-    const handleUnlinkSocial = async (platformToUnlink: string) => { // Renamed param
-        if (platformToUnlink.toLowerCase() !== 'bluesky' || !user) return;
-        setUnlinkingPlatform(platformToUnlink); // Store which platform is being unlinked
-        setShowUnlinkDialog(true); // Show the confirmation dialog
-        setUnlinkDialogOpen(true); // Open the confirmation dialog
-    };
+    const handleUnlinkSocial = async (platformToUnlink: string, usernameToUnlink: string) => {
+    if (platformToUnlink.toLowerCase() !== 'bluesky' || !user) return;
+    setUnlinkingPlatform(platformToUnlink);
+    setUnlinkingUsername(usernameToUnlink); // Add this state variable
+    setShowUnlinkDialog(true);
+    setUnlinkDialogOpen(true);
+};
 
-    const confirmUnlinkSocial = async () => {
-        if (!unlinkingPlatform || !user) return;
+   const confirmUnlinkSocial = async () => {
+    if (!unlinkingPlatform || !unlinkingUsername || !user) return;
 
-        try {
-            setUnlinkLoading(true);
-            setUnlinkError(null);
+    try {
+        setUnlinkLoading(true);
+        setUnlinkError(null);
 
-            const response = await fetch(`/api/users/${user.name}/social/${unlinkingPlatform.toLowerCase()}`, { // Use unlinkingPlatform
-                method: 'DELETE',
-                credentials: 'include', // If your backend requires auth cookies
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ message: `Failed to unlink ${unlinkingPlatform}` }));
-                throw new Error(errorData.message || `Failed to unlink ${unlinkingPlatform} account`);
+        const response = await fetch(`/api/users/${user.name}/social/${unlinkingPlatform.toLowerCase()}/${encodeURIComponent(unlinkingUsername)}`, {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
             }
+        });
 
-            setUnlinkDialogOpen(false);
-            refreshUserData(); // Refresh data after successful unlink
-
-        } catch (err: any) {
-            setUnlinkError(err.message || `An error occurred while unlinking your ${unlinkingPlatform} account`);
-            // Keep dialog open to show error, or close and show a toast
-        } finally {
-            setUnlinkLoading(false);
-            setShowUnlinkDialog(false); // Close the dialog
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: `Failed to unlink ${unlinkingPlatform} account` }));
+            throw new Error(errorData.message || `Failed to unlink ${unlinkingPlatform} account`);
         }
-    };
+
+        setUnlinkDialogOpen(false);
+        refreshUserData();
+
+    } catch (err: any) {
+        setUnlinkError(err.message || `An error occurred while unlinking your ${unlinkingPlatform} account`);
+    } finally {
+        setUnlinkLoading(false);
+        setShowUnlinkDialog(false);
+    }
+};
+
 
 
     if (loading && !user) { // Initial loading state for the profile
@@ -261,7 +269,30 @@ function UserProfile() {
 
 
     return (
-        <PageLayout pageTitle={`${displayUser.name}'s Den`} contentMaxWidth="max-w-2xl">
+    <PageLayout 
+        pageTitle={
+            <div className="flex items-center gap-4">
+                <span className={`inline-flex items-center px-4 py-2 rounded-full text-base font-medium shadow-sm ${
+                    displayUser.role === 'artist' 
+                        ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 border-2 border-purple-300 dark:border-purple-700' 
+                        : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 border-2 border-blue-300 dark:border-blue-700'
+                }`}>
+                    {displayUser.role === 'artist' ?
+                        <>
+                            <PaletteIcon className="w-5 h-5 mr-2" />
+                            Artist
+                        </> :
+                        <>
+                            <UserIcon className="w-5 h-5 mr-2" />
+                            Client
+                        </>
+                    }
+                </span>
+                <span>{displayUser.name}'s Den</span>
+            </div>
+        } 
+        contentMaxWidth="max-w-2xl"
+    >
             <Card className="w-full shadow-xl overflow-hidden">
                 <CardHeader
                     floated={false}
@@ -352,57 +383,76 @@ function UserProfile() {
                             Connect
                         </Typography>
                         {displayUser.socialProfiles && displayUser.socialProfiles.length > 0 ? (
-                            <ul className="space-y-3">
-                                {displayUser.socialProfiles.map((profile) => (
-                                    <li key={profile.platform}
-                                        className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/60 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                                        <div className="flex items-center space-x-3">
-                                            {getPlatformIcon(profile.platform, "w-6 h-6 text-purple-600 dark:text-purple-400 flex-shrink-0")}
-                                            <div>
-                                                <Typography
-                                                    className="font-medium text-gray-800 dark:text-gray-200 capitalize">
-                                                    {profile.platform}
-                                                </Typography>
-                                                <a
-                                                    href={profile.profileUrl}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-sm text-purple-600 dark:text-purple-400 hover:underline"
-                                                    title={`Visit ${displayUser.name}'s ${profile.platform} profile`}
-                                                >
-                                                    {profile.username}
-                                                </a>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <SocialVerificationBadge
-                                                isVerified={profile.isVerified}
-                                                isCurrentUser={isCurrentUser}
-                                                onVerify={() => {
-                                                    if (profile.platform.toLowerCase() === 'bluesky' && !profile.isVerified) {
-                                                        setShowBlueskyVerification(true);
-                                                    }
-                                                }}
-                                            />
-                                            {isCurrentUser && profile.platform.toLowerCase() === 'bluesky' && (
-                                                <Button
-                                                    size="sm"
-                                                    color="error"
-                                                    onClick={() => handleUnlinkSocial(profile.platform)}
-                                                    className="py-1 px-2 text-xs"
-                                                >
-                                                    Unlink
-                                                </Button>
-                                            )}
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <Typography className="text-gray-600 dark:text-gray-400 italic">
-                                {isCurrentUser ? "You haven't linked any social accounts yet." : `${displayUser.name} hasn't linked any social accounts yet.`}
-                            </Typography>
-                        )}
+    <ul className="space-y-3">
+        {/* Group by platform */}
+        {Object.entries(
+            displayUser.socialProfiles.reduce((acc, profile) => {
+                if (!acc[profile.platform]) {
+                    acc[profile.platform] = [];
+                }
+                acc[profile.platform].push(profile);
+                return acc;
+            }, {} as Record<string, SocialProfile[]>)
+        ).map(([platform, profiles]) => (
+            <li key={platform} className="mb-6">
+                <Typography className="font-medium text-gray-700 dark:text-gray-300 capitalize mb-2">
+                    {platform} Accounts ({profiles.length})
+                </Typography>
+                <div className="space-y-2">
+                    {profiles.map((profile) => (
+                        <div 
+                            key={profile.username}
+                            className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/60 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                        >
+                            <div className="flex items-center space-x-3">
+                                {getPlatformIcon(profile.platform, "w-6 h-6 text-purple-600 dark:text-purple-400 flex-shrink-0")}
+                                <div>
+                                    <Typography className="text-sm text-gray-600 dark:text-gray-400">
+                                        @{profile.username}
+                                    </Typography>
+                                    <a
+                                        href={profile.profileUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sm text-purple-600 dark:text-purple-400 hover:underline"
+                                        title={`Visit ${profile.username}'s ${profile.platform} profile`}
+                                    >
+                                        View Profile
+                                    </a>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <SocialVerificationBadge
+                                    isVerified={profile.isVerified}
+                                    isCurrentUser={isCurrentUser}
+                                    onVerify={() => {
+                                        if (profile.platform.toLowerCase() === 'bluesky' && !profile.isVerified) {
+                                            setShowBlueskyVerification(true);
+                                        }
+                                    }}
+                                />
+                                {isCurrentUser && profile.platform.toLowerCase() === 'bluesky' && (
+                                    <Button
+                                        size="sm"
+                                        color="error"
+                                        onClick={() => handleUnlinkSocial(profile.platform, profile.username)}
+                                        className="py-1 px-2 text-xs"
+                                    >
+                                        Unlink
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </li>
+        ))}
+    </ul>
+) : (
+    <Typography className="text-gray-600 dark:text-gray-400 italic">
+        {isCurrentUser ? "You haven't linked any social accounts yet." : `${displayUser.name} hasn't linked any social accounts yet.`}
+    </Typography>
+)}
                         {/* Unlink Confirmation Dialog */}
                         {showUnlinkDialog && displayUser && (
                             <Dialog open={unlinkDialogOpen} handler={() => setUnlinkDialogOpen(false)} size="sm">
@@ -507,24 +557,34 @@ function UserProfile() {
                                 />
                             </Dialog>
                         )}
-                        
+
                     </div>
 
 
                     <div>
                         <Typography variant="h5" className="mb-3 font-semibold text-gray-900 dark:text-gray-100">
-                            My Commissions
+                            {displayUser.role === 'artist' ? 'My Portfolio' : 'My Commissions'}
                         </Typography>
+
                         <div className="p-6 bg-gray-50 dark:bg-gray-800/60 rounded-lg text-center">
                             <PhotoIcon className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
                             <Typography className="text-gray-600 dark:text-gray-400">
-                                {isCurrentUser ? "You haven't posted any commissions yet." : `${displayUser.name} hasn't posted any commissions yet.`}
+                                {isCurrentUser ?
+                                    (displayUser.role === 'artist'
+                                        ? "You haven't added any artwork to your portfolio yet."
+                                        : "You haven't posted any commission requests yet.") :
+                                    (displayUser.role === 'artist'
+                                        ? `${displayUser.name} hasn't added any artwork to their portfolio yet.`
+                                        : `${displayUser.name} hasn't posted any commission requests yet.`)}
                             </Typography>
-                            {isCurrentUser && <CustomFormButton
-                                isFullWidth={false}
-                                variant="solid"
-                                className="mt-4">Create
-                                New Commission</CustomFormButton>}
+                            {isCurrentUser &&
+                                <CustomFormButton
+                                    isFullWidth={false}
+                                    variant="solid"
+                                    className="mt-4">
+                                    {displayUser.role === 'artist' ? 'Add Artwork to Portfolio' : 'Create New Commission'}
+                                </CustomFormButton>
+                            }
                         </div>
                     </div>
                 </CardBody>

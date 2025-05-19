@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { Button, Input, Alert, Spinner, Typography, Card, CardBody } from "@material-tailwind/react";
-import BlueskyVerif from "../resources/BlueskyVerif";
-import CustomFormButton from "./CustomFormButton";
+import React, { useState } from 'react';
+import { Typography, Input, Alert, Spinner } from '@material-tailwind/react';
+import CustomFormButton from './CustomFormButton';
+import { ExclamationTriangleIcon } from '../ui-component/CustomIcons';
 
 interface ManageBlueskyProps {
     username: string;
@@ -10,122 +10,128 @@ interface ManageBlueskyProps {
 }
 
 const ManageBluesky: React.FC<ManageBlueskyProps> = ({ username, onClose, onSuccess }) => {
-    const [mode, setMode] = useState<"choice" | "manual" | "verify">("choice");
-    const [handle, setHandle] = useState("");
-    const [profileUrl, setProfileUrl] = useState("");
+    const [mode, setMode] = useState<'select' | 'verify' | 'manual'>('select');
+    const [blueskyHandle, setBlueskyHandle] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
-        setSuccess(null);
-        setLoading(true);
+    const addBlueskyAccount = async (event: React.FormEvent) => {
+        event.preventDefault();
+        if (!blueskyHandle) {
+            setError('Please enter a valid Bluesky handle');
+            return;
+        }
 
         try {
+            setLoading(true);
+            setError(null);
+
+            // Call your API to add a Bluesky account
             const response = await fetch(`/api/users/${username}/social/bluesky`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({
-                    username: handle,
-                    profileUrl,
-                    isVerified: false
-                })
+                    username: blueskyHandle,
+                    platform: 'bluesky',
+                    isVerified: mode === 'verify',
+                }),
             });
+
             if (!response.ok) {
                 const data = await response.json();
-                throw new Error(data.message || "Failed to add Bluesky account.");
+                throw new Error(data.message || 'Failed to add Bluesky account');
             }
-            setSuccess("Bluesky account added!");
-            onSuccess();
-            setTimeout(onClose, 1200);
+
+            setSuccess('Bluesky account added successfully!');
+            setTimeout(() => {
+                onSuccess();
+            }, 1500);
+
         } catch (err: any) {
-            setError(err.message);
+            setError(err.message || 'An error occurred while adding your Bluesky account');
         } finally {
             setLoading(false);
         }
     };
 
-    if (mode === "verify") {
-        return (
-            <BlueskyVerif
-                appUsername={username}
-                onClose={onClose}
-                onSuccess={() => {
-                    onSuccess();
-                    onClose();
-                }}
-            />
-        );
-    }
-
-    if (mode === "manual") {
-        return (
-            <Card className="max-w-md mx-auto mt-4 shadow-xl">
-                <CardBody>
-                    <Typography variant="h5" className="mb-4">Add Bluesky Account (Unverified)</Typography>
-                    {error && <Alert color="error" className="mb-2">{error}</Alert>}
-                    {success && <Alert color="success" className="mb-2">{success}</Alert>}
-                    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                        <div className="w-72 space-y-1">
-                            <Typography as="label" htmlFor="bluesky-handle" type="small" color="default" className="font-semibold">
-                                Bluesky Handle
-                            </Typography>
-                            <Input
-                                id="bluesky-handle"
-                                placeholder="e.g. myuser.bsky.social"
-                                value={handle}
-                                onChange={e => setHandle(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="w-72 space-y-1">
-                            <Typography as="label" htmlFor="bluesky-profile-url" type="small" color="default" className="font-semibold">
-                                Profile URL
-                            </Typography>
-                            <Input
-                                id="bluesky-profile-url"
-                                placeholder="https://bsky.app/profile/myuser.bsky.social"
-                                value={profileUrl}
-                                onChange={e => setProfileUrl(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="flex gap-2 mt-2">
-                            <CustomFormButton type="submit" disabled={loading}>
-                                {loading ? <Spinner className="h-4 w-4" /> : "Save"}
-                            </CustomFormButton>
-                            <CustomFormButton type="button" onClick={onClose}>
-                                Cancel
-                            </CustomFormButton>
-                        </div>
-                    </form>
-                </CardBody>
-            </Card>
-        );
-    }
-
-    // Choice mode
     return (
-        <Card className="max-w-md mx-auto mt-4 shadow-xl">
-            <CardBody>
-                <Typography variant="h5" className="mb-6 text-center">Add Bluesky Account</Typography>
+        <div className="p-6 max-w-md mx-auto">
+            <div className="text-center mb-6">
+                <Typography variant="h4" className="font-bold text-gray-800 dark:text-gray-200">
+                    {mode === 'select' ? 'Add Bluesky Account' : 
+                     mode === 'verify' ? 'Verify Bluesky Account' : 'Add Unverified Account'}
+                </Typography>
+                <Typography className="text-gray-600 dark:text-gray-400 mt-2">
+                    {mode === 'select' ? 'Choose how you want to add your Bluesky account' : 
+                     mode === 'verify' ? 'Connect your Bluesky account for verification' : 
+                     'Manually add your Bluesky handle'}
+                </Typography>
+            </div>
+
+            {error && (
+                <Alert color="error" className="mb-4">
+                    <div className="flex items-center">
+                        <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
+                        {error}
+                    </div>
+                </Alert>
+            )}
+            
+            {success && (
+                <Alert color="green" className="mb-4">
+                    <div className="flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {success}
+                    </div>
+                </Alert>
+            )}
+
+            {mode === 'select' ? (
                 <div className="flex flex-col gap-4">
                     <CustomFormButton onClick={() => setMode("verify")}>
                         Add & Verify Bluesky Account
                     </CustomFormButton>
-
+                    
                     <CustomFormButton onClick={() => setMode("manual")}>
                         Add Unverified Account (Manual)
                     </CustomFormButton>
-
+                    
                     <CustomFormButton onClick={onClose}>
                         Cancel
                     </CustomFormButton>
                 </div>
-            </CardBody>
-        </Card>
+            ) : (
+                <form onSubmit={addBlueskyAccount} className="space-y-5">
+                    <div>
+                        <Input
+                            value={blueskyHandle}
+                            onChange={(e) => setBlueskyHandle(e.target.value)}
+                            size="lg"
+                            placeholder="username.bsky.social"
+                            required
+                            disabled={loading}
+                        />
+                        <Typography className="text-xs text-gray-500 mt-1">
+                            Enter your Bluesky handle without the @ symbol
+                        </Typography>
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                        <CustomFormButton onClick={() => setMode("select")} className="bg-gray-500 hover:bg-gray-600">
+                            Back
+                        </CustomFormButton>
+                        <CustomFormButton type="submit" disabled={loading}>
+                            {loading ? <Spinner className="h-4 w-4" /> : "Save"}
+                        </CustomFormButton>
+                    </div>
+                </form>
+            )}
+        </div>
     );
 };
 

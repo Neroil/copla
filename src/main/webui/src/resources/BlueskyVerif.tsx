@@ -15,27 +15,13 @@ const BlueskyVerif: React.FC<BlueskyVerifProps> = ({ appUsername, onClose, onSuc
     const [status, setStatus] = useState<string>('initial'); // 'initial', 'authenticating', 'authenticated'
     const [profileData, setProfileData] = useState<any>(null);
     const [agent, setAgent] = useState<Agent | null>(null);
-    const [sessionStore, setSessionStore] = useState<Session | null>(null);
+    const [sessionStore, setSessionStore] = useState<any | null>(null);
 
     // App configuration that can be easily modified
     const appConfig = {
         baseUrl: window.location.origin,
         appName: "YourAppName Bluesky Verification"
     };
-
-    // Create client metadata object
-    const getClientMetadata = () => ({
-        client_id: `${appConfig.baseUrl}/client-metadata.json`,
-        client_name: appConfig.appName,
-        client_uri: appConfig.baseUrl,
-        redirect_uris: [`${appConfig.baseUrl}/callback`],
-        grant_types: ["authorization_code"],
-        response_types: ["code"],
-        scope: "atproto transition:generic",
-        token_endpoint_auth_method: "none",
-        application_type: "web",
-        dpop_bound_access_tokens: true
-    });
 
     useEffect(() => {
         const initializeOAuth = async () => {
