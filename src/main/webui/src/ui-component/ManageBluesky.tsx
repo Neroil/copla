@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Typography, Input, Alert, Spinner } from '@material-tailwind/react';
 import CustomFormButton from './CustomFormButton';
 import { ExclamationTriangleIcon } from '../ui-component/CustomIcons';
+import BlueskyVerif from '../resources/BlueskyVerif';
 
 interface ManageBlueskyProps {
     username: string;
@@ -36,7 +37,7 @@ const ManageBluesky: React.FC<ManageBlueskyProps> = ({ username, onClose, onSucc
                 body: JSON.stringify({
                     username: blueskyHandle,
                     platform: 'bluesky',
-                    isVerified: mode === 'verify',
+                    isVerified: false, // Manual mode is always unverified
                 }),
             });
 
@@ -55,6 +56,13 @@ const ManageBluesky: React.FC<ManageBlueskyProps> = ({ username, onClose, onSucc
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleVerificationSuccess = (message: string) => {
+        setSuccess(message);
+        setTimeout(() => {
+            onSuccess();
+        }, 1500);
     };
 
     return (
@@ -81,7 +89,7 @@ const ManageBluesky: React.FC<ManageBlueskyProps> = ({ username, onClose, onSucc
             )}
             
             {success && (
-                <Alert color="green" className="mb-4">
+                <Alert color="success" className="mb-4">
                     <div className="flex items-center justify-center">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -105,6 +113,12 @@ const ManageBluesky: React.FC<ManageBlueskyProps> = ({ username, onClose, onSucc
                         Cancel
                     </CustomFormButton>
                 </div>
+            ) : mode === 'verify' ? (
+                <BlueskyVerif 
+                    appUsername={username} 
+                    onClose={() => setMode("select")} 
+                    onSuccess={handleVerificationSuccess} 
+                />
             ) : (
                 <form onSubmit={addBlueskyAccount} className="space-y-5">
                     <div>
@@ -115,6 +129,12 @@ const ManageBluesky: React.FC<ManageBlueskyProps> = ({ username, onClose, onSucc
                             placeholder="username.bsky.social"
                             required
                             disabled={loading}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !loading) {
+                                    e.preventDefault();
+                                    addBlueskyAccount(e as unknown as React.FormEvent);
+                                }
+                            }}
                         />
                         <Typography className="text-xs text-gray-500 mt-1">
                             Enter your Bluesky handle without the @ symbol

@@ -93,7 +93,7 @@ export const useFetchUserData = (initialUserId?: string) => {
         loading,
         error,
         isCurrentUser,
-        setUserId: setTargetUserId, // Call this to change the user being fetched
-        fetchData: refetch,       // Call this to manually refetch the current user
+        setUserId: setTargetUserId, 
+        fetchData: refetch,      
     };
 };

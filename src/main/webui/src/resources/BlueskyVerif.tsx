@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Agent } from '@atproto/api';
 import { BrowserOAuthClient } from '@atproto/oauth-client-browser';
 import { Alert, Button, Card, CardBody, CardHeader, Spinner, Typography } from '@material-tailwind/react';
+import CustomFormButton from '../ui-component/CustomFormButton';
 
 interface BlueskyVerifProps {
     appUsername: string;
@@ -192,13 +193,13 @@ const BlueskyVerif: React.FC<BlueskyVerifProps> = ({ appUsername, onClose, onSuc
                                 <Typography className="mb-4">
                                     Link your Bluesky account to verify your identity
                                 </Typography>
-                                <Button
+                                <CustomFormButton
                                     size="lg"
                                     className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black mt-4"
                                     onClick={handleAuthenticate}
                                 >
                                     Connect to Bluesky
-                                </Button>
+                                </CustomFormButton>
                             </div>
                         ) : (
                             <div className="py-2">
@@ -237,12 +238,12 @@ const BlueskyVerif: React.FC<BlueskyVerifProps> = ({ appUsername, onClose, onSuc
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <Button onClick={handleVerifyAccount} disabled={loading}>
+                                    <CustomFormButton onClick={handleVerifyAccount} disabled={loading}>
                                         Verify Account
-                                    </Button>
-                                    <Button variant="outline" color="error" onClick={handleSignOut} disabled={loading}>
+                                    </CustomFormButton>
+                                    <CustomFormButton variant="outline" color="error" onClick={handleSignOut} disabled={loading}>
                                         Disconnect
-                                    </Button>
+                                    </CustomFormButton>
                                 </div>
                             </div>
                         )}
@@ -250,9 +251,9 @@ const BlueskyVerif: React.FC<BlueskyVerifProps> = ({ appUsername, onClose, onSuc
                 )}
 
                 <div className="flex justify-end mt-2">
-                    <Button className="bg-purple-500 dark:bg-purple-100 text-white dark:text-black" onClick={onClose} disabled={loading}>
+                    <CustomFormButton isFullWidth={false} onClick={onClose} disabled={loading}>
                         Cancel
-                    </Button>
+                    </CustomFormButton>
                 </div>
             </CardBody>
         </Card>

@@ -7,6 +7,7 @@ interface AuthStatus {
 }
 
 export function useAuthStatus(): AuthStatus {
+    
     // Check preAuth state from localStorage first
     const preAuthData = localStorage.getItem('preAuthState');
     const preAuthState = preAuthData ? JSON.parse(preAuthData) : null;
