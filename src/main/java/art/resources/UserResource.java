@@ -83,43 +83,42 @@ public class UserResource {
     }
 
     @POST
-@Path("/{username}/social/bluesky")
-@Consumes(MediaType.APPLICATION_JSON)
-@Produces(MediaType.APPLICATION_JSON)
-@Transactional
-public Response addBluesky(@PathParam("username") String username, SocialProfileDto socialProfileDto) {
-    User user = User.findByUsername(username);
-    if (user == null) {
-        return Response.status(Response.Status.NOT_FOUND)
-                .entity(Map.of("message", "User not found"))
-                .build();
-    }
-    
-    // Verify current user is authorized to modify this user's profile
-    Principal principal = identity.getPrincipal();
-    if (!username.equals(principal.getName())) {
-        return Response.status(Response.Status.FORBIDDEN)
-                .entity(Map.of("message", "You can only modify your own account"))
-                .build();
-    }
-    
-    // Create the new social profile
-    SocialProfile socialProfile = new SocialProfile();
-    socialProfile.platform = "bluesky";
-    socialProfile.username = socialProfileDto.username;
-    socialProfile.profileUrl = "https://bsky.app/profile/" + socialProfileDto.username;
-    socialProfile.isVerified = socialProfileDto.isVerified;
-    socialProfile.user = user;
-    
-    // Add to user's social profiles
-    user.socialProfiles.add(socialProfile);
-    socialProfile.persist();
+    @Path("/{username}/social/bluesky")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response addBluesky(@PathParam("username") String username, SocialProfileDto socialProfileDto) {
+        User user = User.findByUsername(username);
+        if (user == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("message", "User not found"))
+                    .build();
+        }
 
-    return Response.ok(Map.of(
-            "message", "Bluesky account added successfully",
-            "profile", new SocialProfileDto(socialProfile)
-    )).build();
-}
+        // Verify current user is authorized to modify this user's profile
+        Principal principal = identity.getPrincipal();
+        if (!username.equals(principal.getName())) {
+            return Response.status(Response.Status.FORBIDDEN)
+                    .entity(Map.of("message", "You can only modify your own account"))
+                    .build();
+        }
+
+        // Create the new social profile
+        SocialProfile socialProfile = new SocialProfile();
+        socialProfile.platform = "bluesky";
+        socialProfile.username = socialProfileDto.username;
+        socialProfile.profileUrl = "https://bsky.app/profile/" + socialProfileDto.username;
+        socialProfile.isVerified = socialProfileDto.isVerified;
+        socialProfile.user = user;
+
+        // Add to user's social profiles
+        user.socialProfiles.add(socialProfile);
+        socialProfile.persist();
+
+        return Response.ok(Map.of(
+                "message", "Bluesky account added successfully",
+                "profile", new SocialProfileDto(socialProfile))).build();
+    }
 
     @POST
     @Path("/link-bluesky")
@@ -168,7 +167,7 @@ public Response addBluesky(@PathParam("username") String username, SocialProfile
         blueskyProfile.profileUrl = "https://bsky.app/profile/" + linkRequest.blueskyHandle;
         blueskyProfile.did = linkRequest.blueskyDid;
         blueskyProfile.displayName = linkRequest.blueskyDisplayName;
-        blueskyProfile.isVerified = true;  // Mark as verified since we've confirmed via OAuth
+        blueskyProfile.isVerified = true; // Mark as verified since we've confirmed via OAuth
 
         // Save changes
         user.persist();
@@ -177,52 +176,53 @@ public Response addBluesky(@PathParam("username") String username, SocialProfile
     }
 
     @DELETE
-@Path("/{username}/social/{platform}/{accountUsername}")
-@Produces(MediaType.APPLICATION_JSON)
-@Transactional
-@Authenticated
-public Response unlinkSocialAccount(
-        @PathParam("username") String username,
-        @PathParam("platform") String platform,
-        @PathParam("accountUsername") String accountUsername) {
-        
-    User user = User.findByUsername(username);
-    if (user == null) {
-        return Response.status(Response.Status.NOT_FOUND)
-                .entity(Map.of("message", "User not found"))
-                .build();
-    }
+    @Path("/{username}/social/{platform}/{accountUsername}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    @Authenticated
+    public Response unlinkSocialAccount(
+            @PathParam("username") String username,
+            @PathParam("platform") String platform,
+            @PathParam("accountUsername") String accountUsername) {
 
-    Principal principal = identity.getPrincipal();
-    if (!username.equals(principal.getName())) {
-        return Response.status(Response.Status.FORBIDDEN)
-                .entity(Map.of("message", "You can only unlink accounts from your own profile"))
-                .build();
-    }
-
-    // Find the specific social profile to remove
-    SocialProfile profileToRemove = null;
-    for (SocialProfile profile : user.socialProfiles) {
-        if (profile.platform.equalsIgnoreCase(platform) && 
-            profile.username.equalsIgnoreCase(accountUsername)) {
-            profileToRemove = profile;
-            break;
+        User user = User.findByUsername(username);
+        if (user == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("message", "User not found"))
+                    .build();
         }
+
+        Principal principal = identity.getPrincipal();
+        if (!username.equals(principal.getName())) {
+            return Response.status(Response.Status.FORBIDDEN)
+                    .entity(Map.of("message", "You can only unlink accounts from your own profile"))
+                    .build();
+        }
+
+        // Find the specific social profile to remove
+        SocialProfile profileToRemove = null;
+        for (SocialProfile profile : user.socialProfiles) {
+            if (profile.platform.equalsIgnoreCase(platform) &&
+                    profile.username.equalsIgnoreCase(accountUsername)) {
+                profileToRemove = profile;
+                break;
+            }
+        }
+
+        if (profileToRemove == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("message", "Social account not found"))
+                    .build();
+        }
+
+        // Remove the profile
+        user.socialProfiles.remove(profileToRemove);
+        profileToRemove.delete();
+
+        return Response.ok(Map.of("message", "Social account unlinked successfully")).build();
     }
 
-    if (profileToRemove == null) {
-        return Response.status(Response.Status.NOT_FOUND)
-                .entity(Map.of("message", "Social account not found"))
-                .build();
-    }
-
-    // Remove the profile
-    user.socialProfiles.remove(profileToRemove);
-    profileToRemove.delete();
-
-    return Response.ok(Map.of("message", "Social account unlinked successfully")).build();
-}
-
+    // Bluesky linking DTO
     public static class BlueskyLinkRequest {
         public String blueskyDid;
         public String blueskyHandle;
@@ -246,4 +246,3 @@ public Response unlinkSocialAccount(
     }
 
 }
-

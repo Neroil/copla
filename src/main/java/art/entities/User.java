@@ -41,6 +41,12 @@ public class User extends PanacheEntity {
         add(username, password, null);
     }
 
+    /**
+     * Add a new user to the database
+     * @param username The user's username (used as an id)
+     * @param password The user's password
+     * @param email The user's email
+     */
     public static void add(String username, String password, String email) {
         User user = new User();
         user.name = username;

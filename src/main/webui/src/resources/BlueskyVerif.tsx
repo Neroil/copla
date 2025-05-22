@@ -18,7 +18,6 @@ const BlueskyVerif: React.FC<BlueskyVerifProps> = ({ appUsername, onClose, onSuc
     const [agent, setAgent] = useState<Agent | null>(null);
     const [sessionStore, setSessionStore] = useState<any | null>(null);
 
-    // App configuration that can be easily modified
     const appConfig = {
         baseUrl: window.location.origin,
         appName: "YourAppName Bluesky Verification"

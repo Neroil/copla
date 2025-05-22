@@ -30,7 +30,7 @@ export const useFetchUserData = (initialUserId?: string) => {
     const fetchDataInternal = useCallback(async (idToFetch: string) => {
         setLoading(true);
         setError(null);
-        setUser(null); // Clear previous user data while fetching new
+        setUser(null);
         setIsCurrentUser(false);
 
         try {
@@ -61,7 +61,7 @@ export const useFetchUserData = (initialUserId?: string) => {
         } finally {
             setLoading(false);
         }
-    }, []); // No dependencies, as idToFetch is passed directly
+    }, []); 
 
     // Effect to fetch data when userId (managed by setTargetUserId) changes
     useEffect(() => {
