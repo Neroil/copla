@@ -5,12 +5,13 @@ import {
     CardBody,
     CardFooter,
     Input,
-    Button,
     Typography,
     Alert,
     Spinner
 } from "@material-tailwind/react";
-import { PageLayout } from "../ui-component/PageLayout"; // Adjust path as needed
+import { PageLayout } from "../ui-component/PageLayout";
+import CustomFormButton from '../ui-component/CustomFormButton';
+import { UserIcon, PaletteIcon } from "../ui-component/CustomIcons";
 
 // Placeholder Icons
 const UserPlusIcon = ({ className }: { className?: string }) => (
@@ -29,7 +30,6 @@ const CheckCircleIcon = ({className}: {className?: string}) => (
     </svg>
 );
 
-
 function Register() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -38,6 +38,7 @@ function Register() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isArtist, setIsArtist] = useState(false);
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -68,7 +69,12 @@ function Register() {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                 },
-                body: JSON.stringify({ name: username, password: password, email: email }),
+                body: JSON.stringify({ 
+                    name: username, 
+                    password: password, 
+                    email: email,
+                    isArtist: isArtist // Send the role information
+                }),
             });
 
             const result = await response.json();
@@ -96,7 +102,7 @@ function Register() {
             <Card className="w-full shadow-2xl">
                 <CardHeader
                     variant="gradient"
-                    color="purple" // Or your theme's primary color
+                    color="purple"
                     className="mb-4 grid h-28 place-items-center"
                 >
                     <div className="flex flex-col items-center">
@@ -119,6 +125,43 @@ function Register() {
                             {success}
                         </Alert>
                     )}
+                    
+                    {/* Role Selection Toggle */}
+                    <div className="w-full relative px-2 py-3">
+                        <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 rounded-xl p-1 relative">
+                            {/* Background slider that moves based on selection */}
+                            <div 
+                                className={`absolute top-1 bottom-1 w-1/2 bg-purple-500 rounded-lg shadow-md transform transition-all duration-300 ease-in-out ${
+                                    isArtist ? 'translate-x-full' : 'translate-x-0'
+                                }`} 
+                            />
+                            
+                            {/* Client option */}
+                            <button
+                                type="button"
+                                onClick={() => setIsArtist(false)}
+                                className={`flex-1 flex justify-center items-center py-3 px-2 rounded-lg z-10 transition-all duration-200 ${
+                                    !isArtist ? 'text-white font-medium' : 'text-gray-700 dark:text-gray-300'
+                                }`}
+                            >
+                                <UserIcon className={`h-5 w-5 mr-2 ${!isArtist ? 'text-white' : ''}`} />
+                                I am a Client
+                            </button>
+                            
+                            {/* Artist option */}
+                            <button
+                                type="button"
+                                onClick={() => setIsArtist(true)}
+                                className={`flex-1 flex justify-center items-center py-3 px-2 rounded-lg z-10 transition-all duration-200 ${
+                                    isArtist ? 'text-white font-medium' : 'text-gray-700 dark:text-gray-300'
+                                }`}
+                            >
+                                <PaletteIcon className={`h-5 w-5 mr-2 ${isArtist ? 'text-white' : ''}`} />
+                                I am an Artist
+                            </button>
+                        </div>
+                    </div>
+
                     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                         <Input
                             type="text"
@@ -152,14 +195,12 @@ function Register() {
                             size="lg"
                             required
                         />
-                        <Button
+                        <CustomFormButton
                             type="submit"
-                            className="bg-purple-600 hover:bg-purple-700 text-white font-medium"
-                            fullWidth
                             disabled={isLoading}
                         >
                             {isLoading ? <Spinner className="h-5 w-5 mx-auto text-white" /> : "Register"}
-                        </Button>
+                        </CustomFormButton>
                     </form>
                 </CardBody>
                 <CardFooter className="pt-2 text-center">
@@ -168,7 +209,7 @@ function Register() {
                         <Typography
                             as="a"
                             href="/login"
-                            className="ml-1 font-bold hover:underline"
+                            className="ml-1 font-bold text-purple-500 hover:underline"
                         >
                             Sign In
                         </Typography>

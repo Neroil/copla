@@ -21,4 +21,7 @@ public class SocialProfile extends PanacheEntity {
     public String profileUrl;
 
     public boolean isVerified;
+
+    public String did;
+    public String displayName;
 }
