@@ -2,7 +2,7 @@ package art.resources;
 
 import art.dtos.UserRegistrationDto;
 import art.entities.User;
-import jakarta.enterprise.context.ApplicationScoped; // Use ApplicationScoped for injection/transaction management
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;

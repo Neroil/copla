@@ -1,9 +1,11 @@
 package art.entities;
 import io.quarkus.elytron.security.common.BcryptUtil;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+
 import java.time.LocalDateTime;
-import jakarta.persistence.Table;
 
 import java.util.List;
 
@@ -14,6 +16,9 @@ public class Artist extends User {
 
     @OneToMany
     public List<Gallery> galleries;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    public CommissionCard commissionCard; //An artist should only have one commission card that they can update whenever
 
     public static void add(String username, String password, String email, boolean verified) {
         Artist artist = new Artist();
@@ -49,5 +54,20 @@ public class Artist extends User {
         return list("verified", true);
     }
 
+    public static CommissionCard getCommissionCard(String username) {
+        Artist artist = (Artist) findByUsername(username); //Cast to artist which is ok
+        if (artist != null) {
+            return artist.commissionCard;
+        }
+        return null;
+    }
+
+    public static void setCommissionCard(String username, CommissionCard commissionCard) {
+        Artist artist = (Artist) findByUsername(username); //Cast to artist which is ok
+        if (artist != null) {
+            artist.commissionCard = commissionCard;
+            artist.persist();
+        }
+    }
 
 }

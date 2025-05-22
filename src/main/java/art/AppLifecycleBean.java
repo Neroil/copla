@@ -1,6 +1,8 @@
 package art;
 
 import art.entities.Artist;
+import art.entities.CommissionCard;
+import art.entities.CommissionCardElement;
 import art.entities.SocialProfile;
 import art.entities.User;
 import io.quarkus.runtime.StartupEvent;
@@ -29,19 +31,26 @@ public class AppLifecycleBean {
             verifiedProfile.isVerified = true;
             user.socialProfiles.add(verifiedProfile);
 
-            var unverifiedProfile = new SocialProfile();
-            unverifiedProfile.user = user;
-            unverifiedProfile.platform = "bluesky";
-            unverifiedProfile.username = "alice_evil_bluesky";
-            unverifiedProfile.profileUrl = "https://bsky.app/profile/alice.evil.bsky.social";
-            unverifiedProfile.isVerified = false;
-            user.socialProfiles.add(unverifiedProfile);
-
             user.persist();
         }
 
         if (!Artist.existsName("neroil")) {
             Artist.add("neroil", "neroil", "neroil@hotmail.com", true);
+
+            CommissionCard card = new CommissionCard();
+            card.title = "My Commission Card";
+            card.description = "This is my commission card.";
+
+            CommissionCardElement.add("Portrait", "A detailed portrait of a character.", null, 100.0, card);
+            CommissionCardElement.add("Landscape", "A beautiful landscape painting.", null, 150.0, card);
+
+            card.persist();
+
+
+            Artist.setCommissionCard("neroil", card);
+            
+
+            System.out.println("Commission card set for artist 'neroil'.");
 
         }
     }
