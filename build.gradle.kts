@@ -43,3 +43,26 @@ tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
     options.compilerArgs.add("-parameters")
 }
+
+gradle.buildFinished {
+    try {
+        val process = ProcessBuilder("cmd", "/c", "netstat -ano | findstr :3000")
+            .start()
+        val output = process.inputStream.bufferedReader().readText()
+        
+        if (output.isNotEmpty()) {
+            val lines = output.lines().filter { it.contains("LISTENING") }
+            lines.forEach { line ->
+                val pid = line.trim().split("\\s+".toRegex()).last()
+                if (pid.isNotEmpty() && pid.matches("\\d+".toRegex())) {
+                    println("Killing process $pid on port 3000")
+                    ProcessBuilder("cmd", "/c", "taskkill /F /PID $pid")
+                        .start()
+                        .waitFor()
+                }
+            }
+        }
+    } catch (e: Exception) {
+        println("Failed to kill process on port 3000: ${e.message}")
+    }
+}

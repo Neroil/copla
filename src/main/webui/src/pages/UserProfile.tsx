@@ -339,6 +339,7 @@ function UserProfile() {
                     shadow={false}
                     className="m-0 w-full rounded-none bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-700 dark:to-indigo-700 p-6"
                 >
+                    
                     <div className="flex flex-col sm:flex-row items-center gap-6">
                         <div className="relative group">
                             <Avatar
@@ -602,7 +603,7 @@ function UserProfile() {
 
                     {/*Commission card display */}
                     {/* Button to display commission card for artists */}
-                    {displayUser.role === "artist" && (
+                    {displayUser.role === "artist" && !isCurrentUser && (
                         <div className="mb-6">
                             <CustomFormButton
                                 className="flex items-center gap-2"
@@ -611,71 +612,83 @@ function UserProfile() {
                                 isFullWidth={false}
                             >
                                 <PaletteIcon className="h-5 w-5" />
-                                {isCurrentUser ? "View My Commission Card" : `View ${displayUser.name}'s Commission Card`}
+                                {`View ${displayUser.name}'s Commission Card`}
                             </CustomFormButton>
                         </div>
                     )}
 
+                    {/* Always show commission card for current user artists */}
+                    {displayUser.role === "artist" && isCurrentUser && (
+                        <div className="mb-6">
+                            <Typography variant="h5" className="mb-4 font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                                <PaletteIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                                My Commission Card
+                            </Typography>
+                            {loadingCard ? (
+                                <CommissionCardLoading />
+                            ) : cardError ? (
+                                <CommissionCardError message={cardError} />
+                            ) : commissionCard ? (
+                                <CommissionCard
+                                    id={commissionCard.id}
+                                    title={commissionCard.title}
+                                    description={commissionCard.description}
+                                    elements={commissionCard.elements || []}
+                                    isOwner={isCurrentUser}
+                                    onEdit={() => {/* Navigate to edit page */ }}
+                                    onDelete={() => { handleCommissionCardDelete() }}
+                                />
+                            ) : (
+                                <CreateCommissionCard
+                                    artistName={displayUser.name}
+                                    onSuccess={() => {
+                                        setTimeout(() => {
+                                            // Refresh commission card data
+                                            if (typeof useCommissionCard(displayUser.name).refreshCard === 'function') {
+                                                useCommissionCard(displayUser.name).refreshCard();
+                                            }
+                                        }, 500);
+                                    }}
+                                />
+                            )}
+                        </div>
+                    )}
 
-                    {showCommissionCard && (
+                    {showCommissionCard && !isCurrentUser && (
                         <Dialog
                             open={showCommissionCard}
                             handler={() => setShowCommissionCard(false)}
                             className="bg-transparent shadow-none"
                         >
                             <div className="max-w-4xl mx-auto w-full">
-                                <div className="relative">
-                                    <Button
-                                        size="sm"
-                                        className="!absolute top-2 right-2 rounded-full z-10"
-                                        onClick={() => setShowCommissionCard(false)}
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
-                                            <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
-                                        </svg>
-                                    </Button>
-
-                                    {loadingCard ? (
-                                        <CommissionCardLoading />
-                                    ) : cardError ? (
-                                        <CommissionCardError message={cardError} />
-                                    ) : commissionCard ? (
-                                        <CommissionCard
-                                            id={commissionCard.id}
-                                            title={commissionCard.title}
-                                            description={commissionCard.description}
-                                            elements={commissionCard.elements || []}
-                                            isOwner={isCurrentUser}
-                                            onEdit={() => {/* Navigate to edit page */ }}
-                                            onDelete={() => { handleCommissionCardDelete() }}
-                                        />
-                                    ) : isCurrentUser && displayUser.role === "artist" ? (
-                                        <CreateCommissionCard
-                                            artistName={displayUser.name}
-                                            onSuccess={() => {
-                                                setShowCommissionCard(false);
-                                                setTimeout(() => {
-                                                    // Refresh commission card data
-                                                    if (typeof useCommissionCard(displayUser.name).refreshCard === 'function') {
-                                                        useCommissionCard(displayUser.name).refreshCard();
-                                                    }
-                                                }, 500);
-                                            }}
-                                        />
-                                    ) : (
-                                        <div className="bg-white dark:bg-gray-900 p-8 rounded-lg shadow-xl text-center">
-                                            <Typography variant="h5" className="mb-3 text-gray-700 dark:text-gray-300">
-                                                No Commission Card Available
-                                            </Typography>
-                                            <Typography className="text-gray-600 dark:text-gray-400">
-                                                {`${displayUser.name} hasn't created a commission card yet.`}
-                                            </Typography>
-                                        </div>
-                                    )}
-                                </div>
+                                {loadingCard ? (
+                                    <CommissionCardLoading />
+                                ) : cardError ? (
+                                    <CommissionCardError message={cardError} />
+                                ) : commissionCard ? (
+                                    <CommissionCard
+                                        id={commissionCard.id}
+                                        title={commissionCard.title}
+                                        description={commissionCard.description}
+                                        elements={commissionCard.elements || []}
+                                        isOwner={false}
+                                        onEdit={() => {/* Navigate to edit page */ }}
+                                        onDelete={() => { handleCommissionCardDelete() }}
+                                    />
+                                ) : (
+                                    <div className="bg-white dark:bg-gray-900 p-8 rounded-lg shadow-xl text-center">
+                                        <Typography variant="h5" className="mb-3 text-gray-700 dark:text-gray-300">
+                                            No Commission Card Available
+                                        </Typography>
+                                        <Typography className="text-gray-600 dark:text-gray-400">
+                                            {`${displayUser.name} hasn't created a commission card yet.`}
+                                        </Typography>
+                                    </div>
+                                )}
                             </div>
                         </Dialog>
                     )}
+
 
 
                     {/* Commissions/Portfolio display */}
