@@ -4,6 +4,7 @@ import art.entities.Artist;
 import art.entities.CommissionCard;
 import art.entities.CommissionCardElement;
 import art.entities.SocialProfile;
+import art.entities.Tag;
 import art.entities.User;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.event.Observes;
@@ -18,6 +19,10 @@ public class AppLifecycleBean {
 
     @Transactional
     void onStart(@Observes StartupEvent ev) {
+        // Initialize default tags on application startup
+        Tag.createDefaultTags();
+
+        
         // Check if the user already exists to avoid duplicates on restart in dev mode
         if (!User.existsName("alice")) {
             User.add("alice", "alice", "alice@gmail.com");

@@ -5,9 +5,6 @@ import {
   CardBody,
   CardFooter,
   Typography,
-  Accordion,
-  AccordionHeader,
-  AccordionBody,
   Chip,
   Spinner,
   Input
