@@ -61,28 +61,28 @@ const COMMON_GRADIENT_CLASSES = "bg-gradient-to-r from-purple-500 via-indigo-500
 // For this structure, passing username to NavLink is cleaner.
 const navItemConfigsList: Omit<NavItemConfig, 'href'> & { href?: string | ((username?: string) => string) }[] = [
     {
-        id: 'browse',
-        text: 'Browse',
-        href: '/commissions',
-        condition: 'always',
-        desktopClassName: "px-4 py-2 rounded-full border border-purple-500/30 dark:border-purple-400/30 hover:bg-purple-500/10 dark:hover:bg-purple-400/10 hover:border-purple-500 dark:hover:border-purple-400 transition-all duration-300 inline-block text-gray-800 dark:text-white",
-        mobileClassName: "block px-4 py-2 rounded-lg hover:bg-purple-500/10 dark:hover:bg-purple-400/10 transition-colors duration-300",
-    },
-    {
-        id: 'artists',
-        text: 'Artists',
+        id: 'discover',
+        text: 'Discover Artists',
         href: '/users',
         condition: 'always',
-        desktopClassName: "px-4 py-2 rounded-full border border-indigo-500/30 dark:border-indigo-400/30 hover:bg-indigo-500/10 dark:hover:bg-indigo-400/10 hover:border-indigo-500 dark:hover:border-indigo-400 transition-all duration-300 inline-block text-gray-800 dark:text-white",
-        mobileClassName: "block px-4 py-2 rounded-lg hover:bg-indigo-500/10 dark:hover:bg-indigo-400/10 transition-colors duration-300",
+        desktopClassName: "px-5 py-2.5 rounded-full border border-purple-500/30 dark:border-purple-400/30 hover:bg-purple-500/10 dark:hover:bg-purple-400/10 hover:border-purple-500 dark:hover:border-purple-400 transition-all duration-300 inline-block text-gray-800 dark:text-white font-medium",
+        mobileClassName: "block px-4 py-3 rounded-lg hover:bg-purple-500/10 dark:hover:bg-purple-400/10 transition-colors duration-300 font-medium",
     },
     {
-        id: 'my-den',
-        text: 'My Den',
-        href: (username?: string) => `/users/${username || ''}`, // Dynamic href based on username
+        id: 'commissions',
+        text: 'Commissions',
+        href: '/commissions',
+        condition: 'always',
+        desktopClassName: "px-5 py-2.5 rounded-full border border-indigo-500/30 dark:border-indigo-400/30 hover:bg-indigo-500/10 dark:hover:bg-indigo-400/10 hover:border-indigo-500 dark:hover:border-indigo-400 transition-all duration-300 inline-block text-gray-800 dark:text-white font-medium",
+        mobileClassName: "block px-4 py-3 rounded-lg hover:bg-indigo-500/10 dark:hover:bg-indigo-400/10 transition-colors duration-300 font-medium",
+    },
+    {
+        id: 'my-profile',
+        text: 'My Profile',
+        href: (username?: string) => `/users/${username || ''}`,
         condition: 'loggedIn',
-        desktopClassName: "px-4 py-2 rounded-full border border-teal-500/30 dark:border-teal-400/30 hover:bg-teal-500/10 dark:hover:bg-teal-400/10 hover:border-teal-500 dark:hover:border-teal-400 transition-all duration-300 inline-block text-gray-800 dark:text-white",
-        mobileClassName: "block px-4 py-2 rounded-lg hover:bg-teal-500/10 dark:hover:bg-teal-400/10 transition-colors duration-300",
+        desktopClassName: "px-5 py-2.5 rounded-full border border-teal-500/30 dark:border-teal-400/30 hover:bg-teal-500/10 dark:hover:bg-teal-400/10 hover:border-teal-500 dark:hover:border-teal-400 transition-all duration-300 inline-block text-gray-800 dark:text-white font-medium",
+        mobileClassName: "block px-4 py-3 rounded-lg hover:bg-teal-500/10 dark:hover:bg-teal-400/10 transition-colors duration-300 font-medium",
     },
     {
         id: 'sign-out',
@@ -90,9 +90,8 @@ const navItemConfigsList: Omit<NavItemConfig, 'href'> & { href?: string | ((user
         onClick: logout,
         condition: 'loggedIn',
         isButton: true,
-        isGradient: true,
-        desktopClassName: "px-4 py-2 rounded-full",
-        mobileClassName: "w-full text-left px-4 py-2 rounded-lg",
+        desktopClassName: "px-5 py-2.5 rounded-full border border-red-500/30 dark:border-red-400/30 hover:bg-red-500/10 dark:hover:bg-red-400/10 hover:border-red-500 dark:hover:border-red-400 transition-all duration-300 text-red-600 dark:text-red-400 font-medium",
+        mobileClassName: "w-full text-left px-4 py-3 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-500/10 font-medium",
     },
     {
         id: 'sign-in',
@@ -100,8 +99,16 @@ const navItemConfigsList: Omit<NavItemConfig, 'href'> & { href?: string | ((user
         href: '/login',
         condition: 'loggedOut',
         isGradient: true,
-        desktopClassName: "px-4 py-2 rounded-full inline-block",
-        mobileClassName: "block px-4 py-2 rounded-lg",
+        desktopClassName: "px-6 py-2.5 rounded-full inline-block font-semibold shadow-md hover:shadow-lg transform hover:scale-105",
+        mobileClassName: "block px-4 py-3 rounded-lg font-semibold",
+    },
+    {
+        id: 'get-started',
+        text: 'Get Started',
+        href: '/register',
+        condition: 'loggedOut',
+        desktopClassName: "px-5 py-2.5 rounded-full border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 inline-block text-gray-800 dark:text-white font-medium",
+        mobileClassName: "block px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300 font-medium border border-gray-300 dark:border-gray-600",
     }
 ];
 
@@ -190,34 +197,44 @@ function Header() {
 
     return (
         <header className="sticky top-0 z-50">
-            <div className="backdrop-blur-md bg-white/80 dark:bg-black/30 text-gray-800 dark:text-white shadow-lg transition-colors duration-300">
-                <div className="container mx-auto px-4 py-3">
+            <div className="backdrop-blur-xl bg-white/90 dark:bg-black/80 text-gray-800 dark:text-white shadow-lg border-b border-gray-200/20 dark:border-gray-700/20 transition-colors duration-300">
+                <div className="container mx-auto px-4 py-4">
                     <div className="flex justify-between items-center">
                         <a
                             href="/"
-                            className="group flex items-center gap-2 text-2xl font-semibold tracking-tighter"
+                            className="group flex items-center gap-3 text-2xl font-bold tracking-tight"
                         >
-                            <CoPlaIcon className="w-8 h-8 text-purple-500 dark:text-purple-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors duration-300" />
-                            <span className="bg-gradient-to-r from-purple-500 via-indigo-400 to-teal-400 dark:from-purple-400 dark:via-indigo-300 dark:to-teal-300 bg-clip-text text-transparent transition-colors duration-300">
+                            <CoPlaIcon className="w-9 h-9 text-purple-600 dark:text-purple-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300" />
+                            <span className="bg-gradient-to-r from-purple-600 via-indigo-500 to-teal-500 dark:from-purple-400 dark:via-indigo-400 dark:to-teal-400 bg-clip-text text-transparent transition-colors duration-300">
                                 CoPla
                             </span>
                         </a>
 
-                        <nav className="hidden md:flex items-center space-x-3">
-                            <ThemeToggleButtonComponent darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-                            <ul className="flex items-center space-x-2">
+                        <nav className="hidden md:flex items-center space-x-4">
+                            <ul className="flex items-center space-x-3">
                                 {currentNavItems.map(item => (
                                     <li key={item.id}>
                                         <NavLink item={item} isMobile={false} username={username || undefined} />
                                     </li>
                                 ))}
                             </ul>
+                            <div className="ml-3 pl-3 border-l border-gray-300 dark:border-gray-600">
+                                <ThemeToggleButtonComponent 
+                                    darkMode={darkMode} 
+                                    toggleDarkMode={toggleDarkMode} 
+                                    className="p-2.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300"
+                                />
+                            </div>
                         </nav>
 
-                        <div className="flex items-center space-x-2 md:hidden">
-                            <ThemeToggleButtonComponent darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+                        <div className="flex items-center space-x-3 md:hidden">
+                            <ThemeToggleButtonComponent 
+                                darkMode={darkMode} 
+                                toggleDarkMode={toggleDarkMode}
+                                className="p-2.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700"
+                            />
                             <button
-                                className="text-gray-800 dark:text-white focus:outline-none"
+                                className="text-gray-800 dark:text-white focus:outline-none p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300"
                                 onClick={() => setMenuOpen(!menuOpen)}
                             >
                                 <svg
@@ -241,8 +258,8 @@ function Header() {
 
             {menuOpen && (
                 <div className="md:hidden mobile-menu-container">
-                    <nav className="bg-white/90 dark:bg-black/90 backdrop-blur-lg text-gray-800 dark:text-white p-4 shadow-lg rounded-b-lg transition-colors duration-300">
-                        <ul className="flex flex-col space-y-3">
+                    <nav className="bg-white/95 dark:bg-black/95 backdrop-blur-xl text-gray-800 dark:text-white p-6 shadow-xl border-b border-gray-200/20 dark:border-gray-700/20 transition-colors duration-300">
+                        <ul className="flex flex-col space-y-4">
                             {currentNavItems.map(item => (
                                 <li key={item.id}>
                                     <NavLink item={item} isMobile={true} username={username || undefined} />
