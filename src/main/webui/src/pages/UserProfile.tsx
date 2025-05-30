@@ -19,6 +19,9 @@ import ManageBluesky from "../ui-component/ManageBluesky";
 import { useFetchUserData } from "../resources/FetchUserData";
 import CustomFormButton from "../ui-component/CustomFormButton.tsx";
 import { PaletteIcon } from "../ui-component/CustomIcons";
+import { LoadingSpinner } from "../ui-component/LoadingSpinner";
+import { ErrorAlert } from "../ui-component/ErrorAlert";
+import { EmptyState } from "../ui-component/EmptyState";
 import {
     useCommissionCard,
     CommissionCard,
@@ -777,16 +780,17 @@ function UserProfile() {
 
     // Loading and error states
     if (loading && !user) {
-        return <PageLayout isLoading={true} loadingText={`Loading ${userIdFromParams || 'user'}'s profile...`} contentMaxWidth="max-w-2xl" children={undefined} />;
+        return (
+            <PageLayout pageTitle="User Profile" contentMaxWidth="max-w-2xl">
+                <LoadingSpinner message={`Loading ${userIdFromParams || 'user'}'s profile...`} />
+            </PageLayout>
+        );
     }
 
     if (error && !user) {
         return (
             <PageLayout pageTitle="Profile Error" contentMaxWidth="max-w-2xl">
-                <Alert color="error" className="flex items-center">
-                    <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
-                    {error || "User data could not be loaded."}
-                </Alert>
+                <ErrorAlert title="Profile Error" message={error || "User data could not be loaded."} />
             </PageLayout>
         );
     }
@@ -794,10 +798,10 @@ function UserProfile() {
     if (!user) {
         return (
             <PageLayout pageTitle="User Not Found" contentMaxWidth="max-w-2xl">
-                <Alert color="warning" className="flex items-center">
-                    <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
-                    The user profile could not be found.
-                </Alert>
+                <ErrorAlert 
+                    title="User Not Found" 
+                    message="The user profile could not be found."
+                />
             </PageLayout>
         );
     }
@@ -895,37 +899,24 @@ function UserProfile() {
                                 {currentUser.role === 'artist' ? 'Portfolio' : 'Commission History'}
                             </Typography>
 
-                            <div className="p-8 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/60 dark:to-gray-700/60 rounded-lg text-center border-2 border-dashed border-gray-300 dark:border-gray-600">
-                                <PhotoIcon className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-                                <Typography variant="h6" className="text-gray-600 dark:text-gray-400 mb-2">
-                                    {isCurrentUser
-                                        ? (currentUser.role === 'artist'
-                                            ? "Your portfolio is empty"
-                                            : "No commission history yet")
-                                        : (currentUser.role === 'artist'
-                                            ? `${currentUser.name}'s portfolio is empty`
-                                            : `${currentUser.name} has no commission history yet`)}
-                                </Typography>
-                                <Typography variant="small" className="text-gray-500 dark:text-gray-400 mb-4">
-                                    {isCurrentUser
-                                        ? (currentUser.role === 'artist'
-                                            ? "Showcase your amazing artwork to potential clients"
-                                            : "Your commissioned artwork will appear here")
-                                        : (currentUser.role === 'artist'
-                                            ? "Check back later to see their latest work"
-                                            : "Their commission history will appear here")}
-                                </Typography>
-                                {isCurrentUser && (
-                                    <CustomFormButton isFullWidth={false} className="mt-2">
-                                        <div className="flex items-center gap-2">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                            </svg>
-                                            {currentUser.role === 'artist' ? 'Add Artwork' : 'Create Commission Request'}
-                                        </div>
-                                    </CustomFormButton>
-                                )}
-                            </div>
+                            <EmptyState
+                                title={isCurrentUser
+                                    ? (currentUser.role === 'artist'
+                                        ? "Your portfolio is empty"
+                                        : "No commission history yet")
+                                    : (currentUser.role === 'artist'
+                                        ? `${currentUser.name}'s portfolio is empty`
+                                        : `${currentUser.name} has no commission history yet`)}
+                                description={isCurrentUser
+                                    ? (currentUser.role === 'artist'
+                                        ? "Showcase your amazing artwork to potential clients"
+                                        : "Your commissioned artwork will appear here")
+                                    : (currentUser.role === 'artist'
+                                        ? "Check back later to see their latest work"
+                                        : "Their commission history will appear here")}
+                                actionLabel={isCurrentUser ? (currentUser.role === 'artist' ? 'Add Artwork' : 'Create Commission Request') : undefined}
+                                onAction={isCurrentUser ? () => {} : undefined}
+                            />
                         </CardBody>
                     </Card>
                 </div>

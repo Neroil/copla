@@ -56,25 +56,22 @@ interface NavItemConfig {
 
 const COMMON_GRADIENT_CLASSES = "bg-gradient-to-r from-purple-500 via-indigo-500 to-teal-500 dark:from-purple-400 dark:via-indigo-400 dark:to-teal-400 hover:from-purple-600 hover:via-indigo-600 hover:to-teal-600 dark:hover:from-purple-500 dark:hover:via-indigo-500 dark:hover:to-teal-500 text-white transition-all duration-300";
 
-// Defined as a function to access username for dynamic hrefs if needed immediately,
-// or it can be a const array if username is passed to NavLink component.
-// For this structure, passing username to NavLink is cleaner.
-const navItemConfigsList: Omit<NavItemConfig, 'href'> & { href?: string | ((username?: string) => string) }[] = [
+const navItemConfigsList: NavItemConfig[] = [
     {
-        id: 'discover',
-        text: 'Discover Artists',
-        href: '/users',
-        condition: 'always',
-        desktopClassName: "px-5 py-2.5 rounded-full border border-purple-500/30 dark:border-purple-400/30 hover:bg-purple-500/10 dark:hover:bg-purple-400/10 hover:border-purple-500 dark:hover:border-purple-400 transition-all duration-300 inline-block text-gray-800 dark:text-white font-medium",
-        mobileClassName: "block px-4 py-3 rounded-lg hover:bg-purple-500/10 dark:hover:bg-purple-400/10 transition-colors duration-300 font-medium",
-    },
-    {
-        id: 'commissions',
-        text: 'Commissions',
+        id: 'all-artists',
+        text: 'Browse Artists',
         href: '/commissions',
         condition: 'always',
         desktopClassName: "px-5 py-2.5 rounded-full border border-indigo-500/30 dark:border-indigo-400/30 hover:bg-indigo-500/10 dark:hover:bg-indigo-400/10 hover:border-indigo-500 dark:hover:border-indigo-400 transition-all duration-300 inline-block text-gray-800 dark:text-white font-medium",
         mobileClassName: "block px-4 py-3 rounded-lg hover:bg-indigo-500/10 dark:hover:bg-indigo-400/10 transition-colors duration-300 font-medium",
+    },
+    {
+        id: 'all-users',
+        text: 'Users',
+        href: '/users',
+        condition: 'always',
+        desktopClassName: "px-5 py-2.5 rounded-full border border-purple-500/30 dark:border-purple-400/30 hover:bg-purple-500/10 dark:hover:bg-purple-400/10 hover:border-purple-500 dark:hover:border-purple-400 transition-all duration-300 inline-block text-gray-800 dark:text-white font-medium",
+        mobileClassName: "block px-4 py-3 rounded-lg hover:bg-purple-500/10 dark:hover:bg-purple-400/10 transition-colors duration-300 font-medium",
     },
     {
         id: 'my-profile',
@@ -193,7 +190,7 @@ function Header() {
             if (item.condition === 'loggedIn' && isLoggedIn) return true;
             if (item.condition === 'loggedOut' && !isLoggedIn) return true;
             return false;
-        }) as NavItemConfig[]; // Cast because filter preserves type, and href logic is handled by NavLink
+        });
 
     return (
         <header className="sticky top-0 z-50">
