@@ -1,7 +1,6 @@
 import React from "react";
 import { Header } from "./Header"; // Adjust path if Header is elsewhere
 import { Spinner } from "@material-tailwind/react"; // For a potential global loading state if needed
-import placeholder from "../placeholder.svg"; // Placeholder image for CoPla logo
 
 interface PageLayoutProps {
     children: React.ReactNode;

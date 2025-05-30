@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Agent } from '@atproto/api';
 import { BrowserOAuthClient } from '@atproto/oauth-client-browser';
-import { Alert, Button, Card, CardBody, CardHeader, Spinner, Typography } from '@material-tailwind/react';
+import { Alert, Card, CardBody, CardHeader, Spinner, Typography } from '@material-tailwind/react';
 import CustomFormButton from '../ui-component/CustomFormButton';
 
 interface BlueskyVerifProps {

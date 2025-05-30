@@ -5,7 +5,7 @@ import { BrowserOAuthClient } from '@atproto/oauth-client-browser';
 const BlueskyCallback = () => {
     const navigate = useNavigate();
     const [error, setError] = useState<string | null>(null);
-    const [processing, setProcessing] = useState(true);
+    const [, setProcessing] = useState(true);
 
     useEffect(() => {
         const handleCallback = async () => {

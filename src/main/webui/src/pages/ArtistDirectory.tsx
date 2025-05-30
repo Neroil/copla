@@ -1,19 +1,16 @@
 // src/main/webui/src/pages/ArtistDirectory.tsx
 import { useEffect, useState } from "react";
 import {
-    Card, CardHeader, CardBody, CardFooter,
-    Typography, Input, Avatar, Button, Spinner, Chip,
+    Typography, Input, Button,
     Popover, PopoverContent, PopoverTrigger, Slider, Checkbox, Tabs, TabsList, TabsTrigger
 } from "@material-tailwind/react";
 import { PageLayout } from "../ui-component/PageLayout";
 import { CustomTagComponent } from "../ui-component/CustomTagComponent.tsx";
-import { BlueskyIcon } from "../ui-component/CustomIcons.tsx";
 import { PageHeader } from "../ui-component/PageHeader";
 import { LoadingSpinner } from "../ui-component/LoadingSpinner";
 import { ErrorAlert } from "../ui-component/ErrorAlert";
 import { UserCard } from "../ui-component/UserCard";
 import { EmptyState } from "../ui-component/EmptyState";
-import { Users, Search } from "lucide-react";
 
 // Define interface for user social profiles
 interface SocialProfile {
@@ -63,7 +60,7 @@ function ArtistDirectory() {
     const [priceRange, setPriceRange] = useState([0, 500]);
     const [availabilityFilter, setAvailabilityFilter] = useState<string[]>([]);
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
-    const [viewMode, setViewMode] = useState("grid");
+    const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
     const [verifiedOnly, setVerifiedOnly] = useState(false);
     const [customTagInput, setCustomTagInput] = useState("");
 
@@ -194,6 +191,12 @@ function ArtistDirectory() {
         }
     };
 
+    const handleAvailabilityChange = (statusType: string) => {
+        setAvailabilityFilter(prev =>
+            prev.includes(statusType) ? prev.filter(s => s !== statusType) : [...prev, statusType]
+        );
+    };
+
     const clearAllFilters = () => {
         setSearchTerm("");
         setPriceRange([0, 500]);
@@ -201,16 +204,6 @@ function ArtistDirectory() {
         setSelectedTags([]);
         setVerifiedOnly(false);
         setCustomTagInput("");
-    };
-
-    // Get status color mapping to Material Tailwind colors
-    const getStatusColor = (status?: string): "primary" | "secondary" | "info" | "success" | "warning" | "error" => {
-        switch (status) {
-            case 'open': return 'success';
-            case 'busy': return 'warning';
-            case 'closed': return 'error';
-            default: return 'secondary';
-        }
     };
 
     if (loading) {
@@ -247,7 +240,7 @@ function ArtistDirectory() {
                                 <Typography variant="small" className="font-semibold text-gray-700 dark:text-gray-200">
                                     View:
                                 </Typography>
-                                <Tabs value={viewMode} onValueChange={setViewMode}>
+                                <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "grid" | "list")}>
                                     <TabsList className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700/50 rounded-lg">
                                         <TabsTrigger value="grid" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white dark:text-gray-200">
                                             Grid

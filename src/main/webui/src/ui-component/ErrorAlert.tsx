@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Typography } from "@material-tailwind/react";
+import {Typography } from "@material-tailwind/react";
 import { AlertTriangle } from "lucide-react";
 
 interface ErrorAlertProps {

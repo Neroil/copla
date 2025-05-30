@@ -48,11 +48,11 @@ function App() {
                             <CustomFormButton
                                 key={type}
                                 onClick={() => handleUserTypeChange(type as 'client' | 'artist')}
-                                className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                                className={`px-10 py-6 rounded-xl font-semibold transition-all duration-300 ${
                                     userType === type
                                         ? type === 'client' 
-                                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
-                                            : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg text-white dark:text-white'
+                                            : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg text-white dark:text-white'
                                         : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
                                 }`}
                                 isFullWidth={false}

@@ -1,7 +1,7 @@
 import { useLocation } from "react-router";
 import { Alert, Typography } from "@material-tailwind/react";
 import { PageLayout } from "../ui-component/PageLayout";
-import React, { useState } from "react";
+import { useState } from "react";
 import CustomFormButton from "../ui-component/CustomFormButton";
 import { GradientCard } from '../ui-component/GradientCard';
 import { FormInput } from '../ui-component/FormInput';

@@ -226,7 +226,6 @@ const FormField: React.FC<{
 
 // Commission Card Display Component
 export const CommissionCard: React.FC<CommissionCardProps> = ({
-  id,
   title,
   description,
   elements,
@@ -284,7 +283,6 @@ export const CommissionCard: React.FC<CommissionCardProps> = ({
           </div>
         ) : (
           <EmptyState
-            icon={<PaletteIcon className="h-12 w-12" />}
             title="No services available"
             description="This artist hasn't added any commission services yet."
             className="py-8"
