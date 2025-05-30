@@ -454,6 +454,87 @@ const BioSection = ({
     </Card>
 );
 
+// Enhanced Commission Card Section Component
+const CommissionCardSection = ({
+    user,
+    isCurrentUser,
+    commissionCard,
+    loadingCard,
+    cardError,
+    onRefreshCard,
+    onDelete
+}: {
+    user: UserData;
+    isCurrentUser: boolean;
+    commissionCard: any;
+    loadingCard: boolean;
+    cardError: string | null;
+    onRefreshCard: () => void;
+    onDelete: () => void;
+}) => {
+    const renderCardContent = () => {
+        if (loadingCard) {
+            return <CommissionCardLoading />;
+        }
+        
+        if (cardError) {
+            return <CommissionCardError message={cardError} />;
+        }
+        
+        if (commissionCard) {
+            return (
+                <CommissionCard
+                    id={commissionCard.id}
+                    title={commissionCard.title}
+                    description={commissionCard.description}
+                    elements={commissionCard.elements || []}
+                    isOwner={isCurrentUser}
+                    onEdit={() => {/* Navigate to edit page */}}
+                    onDelete={onDelete}
+                />
+            );
+        }
+        
+        if (isCurrentUser) {
+            return (
+                <div className="commission-card-create-wrapper">
+                    <CreateCommissionCard
+                        artistName={user.name}
+                        onSuccess={() => {
+                            setTimeout(() => {
+                                onRefreshCard();
+                            }, 500);
+                        }}
+                    />
+                </div>
+            );
+        }
+        
+        return (
+            <div className="text-center py-8">
+                <Typography variant="h6" className="mb-3 text-gray-700 dark:text-gray-300">
+                    No Commission Card Available
+                </Typography>
+                <Typography className="text-gray-600 dark:text-gray-400">
+                    {`${user.name} hasn't created a commission card yet.`}
+                </Typography>
+            </div>
+        );
+    };
+
+    return (
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <CardBody className="p-6">
+                <Typography variant="h5" className="mb-4 font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                    <PaletteIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                    {`${user.name}'s Commission Card`}
+                </Typography>
+                {renderCardContent()}
+            </CardBody>
+        </Card>
+    );
+};
+
 // Main Component
 function UserProfile() {
     const { userId: userIdFromParams } = useParams<{ userId: string }>();
@@ -482,7 +563,6 @@ function UserProfile() {
     const [unlinkError, setUnlinkError] = useState<string | null>(null);
     const [showUnlinkDialog, setShowUnlinkDialog] = useState(false);
     const [unlinkingUsername, setUnlinkingUsername] = useState<string | null>(null);
-    const [showCommissionCard, setShowCommissionCard] = useState(false);
     const [availableTags, setAvailableTags] = useState<string[]>([]);
     const [isUpdatingCommissionStatus, setIsUpdatingCommissionStatus] = useState(false);
     const [tagManagementOpen, setTagManagementOpen] = useState(false);
@@ -566,9 +646,8 @@ function UserProfile() {
 
     const handleCommissionCardDelete = async () => {
         if (!user || !isCurrentUser) return;
-
         try {
-            const response = await fetch(`/api/commission-cards/${user.name}`, {
+            const response = await fetch(`/api/users/${user.name}/commission-card`, {
                 method: 'DELETE',
                 credentials: 'include'
             });
@@ -839,56 +918,15 @@ function UserProfile() {
 
                     {/* Artist-specific sections */}
                     {currentUser.role === "artist" && (
-                        <>
-                            {/* Commission Card Section */}
-                            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-                                <CardBody className="p-6">
-                                    <Typography variant="h5" className="mb-4 font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                                        <PaletteIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                                        {isCurrentUser ? "My Commission Card" : "Commission Card"}
-                                    </Typography>
-                                    
-                                    {isCurrentUser ? (
-                                        <>
-                                            {loadingCard ? (
-                                                <CommissionCardLoading />
-                                            ) : cardError ? (
-                                                <CommissionCardError message={cardError} />
-                                            ) : commissionCard ? (
-                                                <CommissionCard
-                                                    id={commissionCard.id}
-                                                    title={commissionCard.title}
-                                                    description={commissionCard.description}
-                                                    elements={commissionCard.elements || []}
-                                                    isOwner={isCurrentUser}
-                                                    onEdit={() => {/* Navigate to edit page */}}
-                                                    onDelete={handleCommissionCardDelete}
-                                                />
-                                            ) : (
-                                                <CreateCommissionCard
-                                                    artistName={currentUser.name}
-                                                    onSuccess={() => {
-                                                        setTimeout(() => {
-                                                            refreshCard();
-                                                        }, 500);
-                                                    }}
-                                                />
-                                            )}
-                                        </>
-                                    ) : (
-                                        <CustomFormButton
-                                            className="flex items-center gap-2"
-                                            onClick={() => setShowCommissionCard(!showCommissionCard)}
-                                            disabled={loadingCard}
-                                            isFullWidth={false}
-                                        >
-                                            <PaletteIcon className="h-5 w-5" />
-                                            {`View ${currentUser.name}'s Commission Card`}
-                                        </CustomFormButton>
-                                    )}
-                                </CardBody>
-                            </Card>
-                        </>
+                        <CommissionCardSection
+                            user={currentUser}
+                            isCurrentUser={isCurrentUser}
+                            commissionCard={commissionCard}
+                            loadingCard={loadingCard}
+                            cardError={cardError}
+                            onRefreshCard={refreshCard}
+                            onDelete={handleCommissionCardDelete}
+                        />
                     )}
 
                     {/* Portfolio Section */}
@@ -1104,41 +1142,6 @@ function UserProfile() {
                     </Card>
                 </div>
             </div>
-
-            {/* Remove the old dialog since it's now inline */}
-            {showCommissionCard && !isCurrentUser && (
-                <Dialog
-                    open={showCommissionCard}
-                    onOpenChange={setShowCommissionCard}
-                >
-                    <div className="max-w-4xl mx-auto w-full">
-                        {loadingCard ? (
-                            <CommissionCardLoading />
-                        ) : cardError ? (
-                            <CommissionCardError message={cardError} />
-                        ) : commissionCard ? (
-                            <CommissionCard
-                                id={commissionCard.id}
-                                title={commissionCard.title}
-                                description={commissionCard.description}
-                                elements={commissionCard.elements || []}
-                                isOwner={false}
-                                onEdit={() => {/* Navigate to edit page */}}
-                                onDelete={handleCommissionCardDelete}
-                            />
-                        ) : (
-                            <div className="bg-white dark:bg-gray-900 p-8 rounded-lg shadow-xl text-center">
-                                <Typography variant="h5" className="mb-3 text-gray-700 dark:text-gray-300">
-                                    No Commission Card Available
-                                </Typography>
-                                <Typography className="text-gray-600 dark:text-gray-400">
-                                    {`${displayUser.name} hasn't created a commission card yet.`}
-                                </Typography>
-                            </div>
-                        )}
-                    </div>
-                </Dialog>
-            )}
         </PageLayout>
     );
 }
