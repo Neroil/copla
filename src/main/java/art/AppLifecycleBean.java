@@ -40,7 +40,7 @@ public class AppLifecycleBean {
         }
 
         if (!Artist.existsName("neroil")) {
-            Artist.add("neroil", "neroil", "neroil@hotmail.com", true);
+            Artist.add("neroil", "neroil", "neroil@hotmail.com", false);
 
             CommissionCard card = new CommissionCard();
             card.title = "My Commission Card";

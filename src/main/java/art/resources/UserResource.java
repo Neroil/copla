@@ -97,12 +97,6 @@ public class UserResource {
         }
     }
 
-    // ... other methods remain the same, ensuring they use the correct DTOs if applicable ...
-    // For example, addBluesky, linkBlueskyAccount, commission card methods, tag methods, etc.
-    // primarily deal with entities or specific DTOs like SocialProfileDto,
-    // so they might not need changes unless they were directly constructing UserDto/ArtistDto
-    // in a way that's now simplified by the new constructors.
-
     @POST
     @Path("/{username}/social/bluesky")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -127,37 +121,36 @@ public class UserResource {
         socialProfile.platform = "bluesky";
         socialProfile.username = socialProfileDto.username;
         socialProfile.profileUrl = "https://bsky.app/profile/" + socialProfileDto.username;
-        socialProfile.isVerified = socialProfileDto.isVerified; // Assuming SocialProfileDto has isVerified
+        socialProfile.isVerified = socialProfileDto.isVerified;
         socialProfile.user = user;
 
         user.socialProfiles.add(socialProfile);
-        socialProfile.persist(); // Persist the new social profile
+        socialProfile.persist();
 
-        // It's good practice to return the created/updated DTO
+        // Update artist verification status if this is a verified Bluesky account
+        if ("artist".equals(user.role) && socialProfileDto.isVerified) {
+            Artist artist = (Artist) user;
+            artist.verified = true;
+            artist.persist();
+        }
+
         return Response.ok(Map.of(
                 "message", "Bluesky account added successfully",
-                "profile", new SocialProfileDto(socialProfile))) // Use SocialProfileDto constructor
-                .status(Response.Status.CREATED) // Or OK if preferred
+                "profile", new SocialProfileDto(socialProfile)))
+                .status(Response.Status.CREATED)
                 .build();
     }
     
-    // Ensure BlueskyLinkRequest, ErrorResponse, SuccessResponse are defined as before or adjusted if needed.
-    // For brevity, the rest of the UserResource methods are omitted but should be reviewed for consistency.
-    // Generally, the changes above are the most critical for the DTO refactoring.
-
-
     @POST
     @Path("/link-bluesky")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Response linkBlueskyAccount(
-            BlueskyLinkRequest linkRequest) {
-
+    public Response linkBlueskyAccount(BlueskyLinkRequest linkRequest) {
         Principal principal = identity.getPrincipal();
-        if (principal == null || identity.isAnonymous()) { // Check for anonymous explicitly as well
+        if (principal == null || identity.isAnonymous()) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity(new ErrorResponse("User not authenticated")) // Corrected typo from "authenticatedd"
+                    .entity(new ErrorResponse("User not authenticated"))
                     .build();
         }
 
@@ -177,19 +170,24 @@ public class UserResource {
                     SocialProfile newProfile = new SocialProfile();
                     newProfile.platform = "bluesky";
                     newProfile.user = user;
-                    user.socialProfiles.add(newProfile); // Add to the list before persisting user
+                    user.socialProfiles.add(newProfile);
                     return newProfile;
                 });
 
         blueskyProfile.username = linkRequest.blueskyHandle;
         blueskyProfile.profileUrl = "https://bsky.app/profile/" + linkRequest.blueskyHandle;
-        blueskyProfile.did = linkRequest.blueskyDid; // Assuming SocialProfile entity has 'did' and 'displayName'
+        blueskyProfile.did = linkRequest.blueskyDid;
         blueskyProfile.displayName = linkRequest.blueskyDisplayName;
         blueskyProfile.isVerified = true; 
 
-        // No need to persist blueskyProfile separately if CascadeType.ALL or PERSIST is on User.socialProfiles
-        // and blueskyProfile is managed by the User entity. User.persist() should handle it.
         user.persist();
+
+        // Update artist verification status since Bluesky linking implies verification
+        if ("artist".equals(user.role)) {
+            Artist artist = (Artist) user;
+            artist.verified = true;
+            artist.persist();
+        }
 
         return Response.ok(new SuccessResponse("Bluesky account linked successfully")).build();
     }
@@ -330,7 +328,7 @@ public class UserResource {
         }
 
         Principal principal = identity.getPrincipal();
-        if (principal == null || !username.equals(principal.getName())) { // Check for null principal
+        if (principal == null || !username.equals(principal.getName())) {
             return Response.status(Response.Status.FORBIDDEN)
                     .entity(Map.of("message", "You can only unlink accounts from your own profile"))
                     .build();
@@ -348,16 +346,24 @@ public class UserResource {
                     .build();
         }
 
-        user.socialProfiles.remove(profileToRemove);
-        // profileToRemove.delete(); // Not needed if User.socialProfiles has orphanRemoval=true and User is persisted
-                                   // However, explicit delete is safer if unsure about cascade/orphan config.
-                                   // Given SocialProfile.user is the owning side (mappedBy="user" on User.socialProfiles),
-                                   // explicit deletion or proper cascade from User is needed.
-                                   // If orphanRemoval=true on @OneToMany on User.socialProfiles, removing from list + persisting user works.
-        SocialProfile.delete("id", profileToRemove.id); // Or profileToRemove.delete() if it's a PanacheEntity.
-                                                        // Assuming SocialProfile is a PanacheEntity.
+        boolean wasVerifiedBluesky = "bluesky".equalsIgnoreCase(platform) && profileToRemove.isVerified;
 
-        user.persist(); // Persist user to save changes to the socialProfiles list
+        user.socialProfiles.remove(profileToRemove);
+        SocialProfile.delete("id", profileToRemove.id);
+        user.persist();
+
+        // Update artist verification status if removing a verified Bluesky account
+        if ("artist".equals(user.role) && wasVerifiedBluesky) {
+            Artist artist = (Artist) user;
+            // Check if there are any other verified Bluesky accounts remaining
+            boolean hasOtherVerifiedBluesky = user.socialProfiles.stream()
+                    .anyMatch(profile -> "bluesky".equalsIgnoreCase(profile.platform) && profile.isVerified);
+            
+            if (!hasOtherVerifiedBluesky) {
+                artist.verified = false;
+                artist.persist();
+            }
+        }
 
         return Response.ok(Map.of("message", "Social account unlinked successfully")).build();
     }
