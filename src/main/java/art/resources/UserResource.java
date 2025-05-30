@@ -17,6 +17,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -223,10 +224,10 @@ public class UserResource {
 
     @POST
     @Path("/{username}/commission-card")
-    @Consumes(MediaType.APPLICATION_JSON) // Should be @Consumes if taking data, but this one creates an empty one.
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public Response createCommissionCard(@PathParam("username") String username /* Potentially CommissionCardDto cardDetails if creating with data */) {
+    public Response createCommissionCard(@PathParam("username") String username, CommissionCardDto cardDetails) {
         User user = User.findByUsername(username);
         if (user == null) {
             return Response.status(Response.Status.NOT_FOUND)
@@ -240,7 +241,6 @@ public class UserResource {
                     .build();
         }
         
-        // Add authorization check: is the logged-in user the same as {username}?
         Principal principal = identity.getPrincipal();
         if (principal == null || !username.equals(principal.getName())) {
             return Response.status(Response.Status.FORBIDDEN)
@@ -250,27 +250,21 @@ public class UserResource {
 
         Artist artist = (Artist) user;
         if (artist.commissionCard != null) {
-             return Response.status(Response.Status.CONFLICT) // Or BAD_REQUEST
+             return Response.status(Response.Status.CONFLICT)
                     .entity(Map.of("message", "Artist already has a commission card. Use PUT to update or DELETE first."))
                     .build();
         }
 
         CommissionCard commissionCard = new CommissionCard();
-        // If commissionCardDetails were passed in request body, populate commissionCard here
+        commissionCard.title = cardDetails.title;
+        commissionCard.description = cardDetails.description;
+        commissionCard.elements = new ArrayList<>();
+        
         artist.commissionCard = commissionCard;
-        commissionCard.artist = artist; // Set the bidirectional relationship if CommissionCard has an 'artist' field.
-                                   // And if User.commissionCard is mappedBy "artist"
+        commissionCard.artist = artist;
         
-        // Panache ORM: If CommissionCard is owned by Artist (e.g. @OneToOne(mappedBy="artist")),
-        // persisting artist should persist commissionCard if CascadeType.PERSIST or ALL.
-        // If CommissionCard owns the relationship (i.e. has @JoinColumn for artist_id),
-        // then commissionCard.persist() is needed.
-        // Given Artist.commissionCard is @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true),
-        // artist.persist() is sufficient after setting artist.commissionCard.
-        // However, commissionCard.persist() also works if it's a new entity.
-        
-        commissionCard.persist(); // Explicitly persist the new card
-        artist.persist(); // Or just artist.persist() if cascade is set up from Artist to CommissionCard
+        commissionCard.persist();
+        artist.persist();
 
         return Response.status(Response.Status.CREATED)
                        .entity(new CommissionCardDto(commissionCard))

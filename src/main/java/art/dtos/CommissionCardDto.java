@@ -29,8 +29,9 @@ public class CommissionCardDto {
     public CommissionCard toEntity() {
         CommissionCard card = new CommissionCard();
         card.id = this.id;
-        card.title = this.title;
-        card.description = this.description;
+        card.title = this.title != null ? this.title : "";
+        card.description = this.description != null ? this.description : "";
+        card.elements = new ArrayList<>();
         return card;
     }
 }
