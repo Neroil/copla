@@ -569,6 +569,9 @@ function UserProfile() {
     const [isEditingBio, setIsEditingBio] = useState(false);
     const [isSavingBio, setIsSavingBio] = useState(false);
 
+    // Add new state for tracking OAuth return
+    const [shouldShowVerification, setShouldShowVerification] = useState(false);
+
     // Local state to avoid full page refreshes
     const [localUser, setLocalUser] = useState<UserData | null>(null);
     const [localSocialProfiles, setLocalSocialProfiles] = useState<SocialProfile[]>([]);
@@ -613,6 +616,22 @@ function UserProfile() {
 
     // Use local user data if available, otherwise fall back to fetched data
     const currentUser = localUser || displayUser;
+
+    // Add effect to check for OAuth return state
+    useEffect(() => {
+        // Check if we're returning from OAuth and should show verification
+        const shouldShowSocialManagement = sessionStorage.getItem('copla_show_social_management');
+        const shouldShowVerification = sessionStorage.getItem('copla_show_bluesky_verification');
+        
+        if (shouldShowSocialManagement && currentUser && isCurrentUser) {
+            setShowManageSocials(true);
+            setShouldShowVerification(!!shouldShowVerification);
+            
+            // Clean up session storage
+            sessionStorage.removeItem('copla_show_social_management');
+            sessionStorage.removeItem('copla_show_bluesky_verification');
+        }
+    }, [currentUser, isCurrentUser]);
 
     // Handler functions
     const handleSaveBio = async () => {
@@ -666,6 +685,7 @@ function UserProfile() {
         // Refresh user data when social link is successful
         refreshUserData();
         setShowManageSocials(false);
+        setShouldShowVerification(false);
     };
 
     // Handlers
@@ -997,8 +1017,12 @@ function UserProfile() {
                             {showManageSocials && isCurrentUser ? (
                                 <ManageBluesky
                                     username={currentUser.name}
-                                    onClose={() => setShowManageSocials(false)}
+                                    onClose={() => {
+                                        setShowManageSocials(false);
+                                        setShouldShowVerification(false);
+                                    }}
                                     onSuccess={handleSocialLinkSuccess}
+                                    autoShowVerification={shouldShowVerification}
                                 />
                             ) : (
                                 <>

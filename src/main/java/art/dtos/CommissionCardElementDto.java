@@ -9,11 +9,10 @@ public class CommissionCardElementDto {
     public String description;
     public List<String> exampleImageUrls;
     public Double price;
-    
+
     public CommissionCardElementDto() {
-        // Default constructor for JSON serialization
     }
-    
+
     public CommissionCardElementDto(CommissionCardElement entity) {
         this.id = entity.id;
         this.title = entity.title;
@@ -21,7 +20,7 @@ public class CommissionCardElementDto {
         this.exampleImageUrls = entity.exampleImageUrls;
         this.price = entity.price;
     }
-    
+
     public CommissionCardElement toEntity() {
         CommissionCardElement element = new CommissionCardElement();
         element.id = this.id;

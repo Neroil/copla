@@ -14,27 +14,25 @@ import jakarta.ws.rs.core.Response;
 @Path("/tags")
 public class TagResource {
 
-    
-    
     @GET
     @Path("/all")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllTags(@QueryParam("category") String category) {
         List<Tag> tags;
-        
+
         if (category != null && !category.isEmpty()) {
             tags = Tag.findByCategory(category);
         } else {
             tags = Tag.findAllActiveTags();
         }
-        
+
         var tagDtos = tags.stream()
-            .map(TagDto::new)
-            .toList();
-        
+                .map(TagDto::new)
+                .toList();
+
         return Response.ok(tagDtos).build();
     }
-    
+
     @GET
     @Path("/names")
     @Produces(MediaType.APPLICATION_JSON)

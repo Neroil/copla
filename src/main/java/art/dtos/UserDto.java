@@ -14,7 +14,6 @@ public class UserDto {
     public SocialProfileDto[] socialProfiles;
 
     public UserDto() {
-        // Default constructor for JSON serialization
     }
 
     public UserDto(User user) {
@@ -28,8 +27,8 @@ public class UserDto {
 
         if (user.socialProfiles != null) {
             this.socialProfiles = user.socialProfiles.stream()
-                .map(SocialProfileDto::new)
-                .toArray(SocialProfileDto[]::new);
+                    .map(SocialProfileDto::new)
+                    .toArray(SocialProfileDto[]::new);
         } else {
             this.socialProfiles = new SocialProfileDto[0];
         }

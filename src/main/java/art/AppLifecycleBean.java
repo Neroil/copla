@@ -64,20 +64,25 @@ public class AppLifecycleBean {
             var artist = (Artist) Artist.findByUsername("neroil");
             artist.profilePicPath = "/api/images/view/neroil_profile.jpg";
             artist.bio = "Digital illustrator specializing in fantasy and character design.";
-            
+
             // Add tags for neroil
             var digitalTag = Tag.findByName("Digital");
             var fantasyTag = Tag.findByName("Fantasy");
-            if (digitalTag != null) artist.addTag(digitalTag);
-            if (fantasyTag != null) artist.addTag(fantasyTag);
+            if (digitalTag != null)
+                artist.addTag(digitalTag);
+            if (fantasyTag != null)
+                artist.addTag(fantasyTag);
 
             CommissionCard card = new CommissionCard();
             card.title = "Fantasy Character Commissions";
             card.description = "High-quality digital character illustrations for your fantasy projects.";
 
-            CommissionCardElement.add("Portrait", "A detailed portrait of a character.", List.of("/api/images/view/neroil_portrait_sample.jpg"), 100.0, card);
-            CommissionCardElement.add("Full Body", "Complete character illustration.", List.of("/api/images/view/neroil_fullbody_sample.jpg"), 200.0, card);
-            CommissionCardElement.add("Character Sheet", "Multiple poses and expressions.", List.of("/api/images/view/neroil_sheet_sample.jpg"), 350.0, card);
+            CommissionCardElement.add("Portrait", "A detailed portrait of a character.",
+                    List.of("/api/images/view/neroil_portrait_sample.jpg"), 100.0, card);
+            CommissionCardElement.add("Full Body", "Complete character illustration.",
+                    List.of("/api/images/view/neroil_fullbody_sample.jpg"), 200.0, card);
+            CommissionCardElement.add("Character Sheet", "Multiple poses and expressions.",
+                    List.of("/api/images/view/neroil_sheet_sample.jpg"), 350.0, card);
 
             card.persist();
             Artist.setCommissionCard("neroil", card);
@@ -89,7 +94,7 @@ public class AppLifecycleBean {
             artist.profilePicPath = "/api/images/view/sakura_profile.jpg";
             artist.bio = "Traditional Japanese-inspired artist. Watercolors and ink specialization.";
             artist.verified = true;
-            
+
             // Add Bluesky profile for verification
             var blueskyProfile = new SocialProfile();
             blueskyProfile.user = artist;
@@ -103,16 +108,21 @@ public class AppLifecycleBean {
             // Add tags
             var traditionalTag = Tag.findByName("Traditional");
             var watercolorTag = Tag.findByName("Watercolor");
-            if (traditionalTag != null) artist.addTag(traditionalTag);
-            if (watercolorTag != null) artist.addTag(watercolorTag);
+            if (traditionalTag != null)
+                artist.addTag(traditionalTag);
+            if (watercolorTag != null)
+                artist.addTag(watercolorTag);
 
             CommissionCard card = new CommissionCard();
             card.title = "Traditional Watercolor Art";
             card.description = "Handpainted watercolor pieces with Japanese aesthetic influence.";
 
-            CommissionCardElement.add("Small Painting", "A4 size watercolor painting.", List.of("/api/images/view/sakura_small_sample.jpg"), 80.0, card);
-            CommissionCardElement.add("Medium Painting", "A3 size detailed watercolor.", List.of("/api/images/view/sakura_medium_sample.jpg"), 150.0, card);
-            CommissionCardElement.add("Large Commission", "A2 size masterpiece.", List.of("/api/images/view/sakura_large_sample.jpg"), 300.0, card);
+            CommissionCardElement.add("Small Painting", "A4 size watercolor painting.",
+                    List.of("/api/images/view/sakura_small_sample.jpg"), 80.0, card);
+            CommissionCardElement.add("Medium Painting", "A3 size detailed watercolor.",
+                    List.of("/api/images/view/sakura_medium_sample.jpg"), 150.0, card);
+            CommissionCardElement.add("Large Commission", "A2 size masterpiece.",
+                    List.of("/api/images/view/sakura_large_sample.jpg"), 300.0, card);
 
             card.persist();
             Artist.setCommissionCard("sakura_art", card);
@@ -124,20 +134,25 @@ public class AppLifecycleBean {
             var artist = (Artist) Artist.findByUsername("pixel_master");
             artist.profilePicPath = "/api/images/view/pixel_profile.jpg";
             artist.bio = "Retro game-inspired pixel artist. Creating nostalgic 8-bit and 16-bit style artwork.";
-            
+
             // Add tags
             var pixelTag = Tag.findByName("Pixel Art");
             var gameTag = Tag.findByName("Game Art");
-            if (pixelTag != null) artist.addTag(pixelTag);
-            if (gameTag != null) artist.addTag(gameTag);
+            if (pixelTag != null)
+                artist.addTag(pixelTag);
+            if (gameTag != null)
+                artist.addTag(gameTag);
 
             CommissionCard card = new CommissionCard();
             card.title = "Retro Pixel Art Commissions";
             card.description = "Custom pixel art in classic video game styles.";
 
-            CommissionCardElement.add("Character Sprite", "16x16 to 32x32 pixel character.", List.of("/api/images/view/pixel_sprite_sample.png"), 25.0, card);
-            CommissionCardElement.add("Background Scene", "Detailed pixel art background.", List.of("/api/images/view/pixel_background_sample.png"), 75.0, card);
-            CommissionCardElement.add("Animation Set", "4-8 frame character animation.", List.of("/api/images/view/pixel_animation_sample.gif"), 120.0, card);
+            CommissionCardElement.add("Character Sprite", "16x16 to 32x32 pixel character.",
+                    List.of("/api/images/view/pixel_sprite_sample.png"), 25.0, card);
+            CommissionCardElement.add("Background Scene", "Detailed pixel art background.",
+                    List.of("/api/images/view/pixel_background_sample.png"), 75.0, card);
+            CommissionCardElement.add("Animation Set", "4-8 frame character animation.",
+                    List.of("/api/images/view/pixel_animation_sample.gif"), 120.0, card);
 
             card.persist();
             Artist.setCommissionCard("pixel_master", card);
@@ -150,12 +165,14 @@ public class AppLifecycleBean {
             artist.profilePicPath = "/api/images/view/abstract_profile.jpg";
             artist.bio = "Contemporary abstract artist exploring emotions through color and form.";
             artist.verified = false; // Not verified, no commission card yet
-            
+
             // Add tags
             var abstractTag = Tag.findByName("Abstract");
             var contemporaryTag = Tag.findByName("Contemporary");
-            if (abstractTag != null) artist.addTag(abstractTag);
-            if (contemporaryTag != null) artist.addTag(contemporaryTag);
+            if (abstractTag != null)
+                artist.addTag(abstractTag);
+            if (contemporaryTag != null)
+                artist.addTag(contemporaryTag);
 
             artist.persist();
         }
@@ -166,7 +183,7 @@ public class AppLifecycleBean {
             artist.profilePicPath = "/api/images/view/sketch_profile.jpg";
             artist.bio = "Daily sketch artist. Quick studies, character concepts, and gesture drawings.";
             artist.verified = true;
-            
+
             // Add social media
             var instagramProfile = new SocialProfile();
             instagramProfile.user = artist;
@@ -188,16 +205,21 @@ public class AppLifecycleBean {
             // Add tags
             var sketchTag = Tag.findByName("Sketch");
             var conceptTag = Tag.findByName("Concept Art");
-            if (sketchTag != null) artist.addTag(sketchTag);
-            if (conceptTag != null) artist.addTag(conceptTag);
+            if (sketchTag != null)
+                artist.addTag(sketchTag);
+            if (conceptTag != null)
+                artist.addTag(conceptTag);
 
             CommissionCard card = new CommissionCard();
             card.title = "Quick Sketch Commissions";
             card.description = "Fast, expressive sketches perfect for concept work and character studies.";
 
-            CommissionCardElement.add("Quick Sketch", "15-minute character sketch.", List.of("/api/images/view/sketch_quick_sample.jpg"), 15.0, card);
-            CommissionCardElement.add("Detailed Sketch", "1-hour detailed study.", List.of("/api/images/view/sketch_detailed_sample.jpg"), 45.0, card);
-            CommissionCardElement.add("Sketch Page", "Multiple poses/expressions.", List.of("/api/images/view/sketch_page_sample.jpg"), 80.0, card);
+            CommissionCardElement.add("Quick Sketch", "15-minute character sketch.",
+                    List.of("/api/images/view/sketch_quick_sample.jpg"), 15.0, card);
+            CommissionCardElement.add("Detailed Sketch", "1-hour detailed study.",
+                    List.of("/api/images/view/sketch_detailed_sample.jpg"), 45.0, card);
+            CommissionCardElement.add("Sketch Page", "Multiple poses/expressions.",
+                    List.of("/api/images/view/sketch_page_sample.jpg"), 80.0, card);
 
             card.persist();
             Artist.setCommissionCard("sketch_daily", card);
@@ -209,16 +231,19 @@ public class AppLifecycleBean {
             var artist = (Artist) Artist.findByUsername("3d_sculptor");
             artist.profilePicPath = "/api/images/view/sculptor_profile.jpg";
             artist.bio = "3D digital sculptor and character modeler. Creating detailed models for games and animation.";
-            
+
             // Add tags
             var threeDTag = Tag.findByName("3D");
             var sculptureTag = Tag.findByName("Sculpture");
-            if (threeDTag != null) artist.addTag(threeDTag);
-            if (sculptureTag != null) artist.addTag(sculptureTag);
+            if (threeDTag != null)
+                artist.addTag(threeDTag);
+            if (sculptureTag != null)
+                artist.addTag(sculptureTag);
 
             artist.persist();
         }
 
-        System.out.println("Initialized sample data: 3 users and 6 artists with various specializations, tags, and commission cards.");
+        System.out.println(
+                "Initialized sample data: 3 users and 6 artists with various specializations, tags, and commission cards.");
     }
 }

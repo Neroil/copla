@@ -33,8 +33,8 @@ public class UserResource {
     public Response getAllUsers() {
         // Map every user to UserDto using the refactored UserDto constructor
         var users = User.findAllUsers().stream()
-                        .map(UserDto::new) // UserDto constructor will handle the mapping
-                        .toList();
+                .map(UserDto::new) // UserDto constructor will handle the mapping
+                .toList();
         return Response.ok(users).build();
     }
 
@@ -140,7 +140,7 @@ public class UserResource {
                 .status(Response.Status.CREATED)
                 .build();
     }
-    
+
     @POST
     @Path("/link-bluesky")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -178,7 +178,7 @@ public class UserResource {
         blueskyProfile.profileUrl = "https://bsky.app/profile/" + linkRequest.blueskyHandle;
         blueskyProfile.did = linkRequest.blueskyDid;
         blueskyProfile.displayName = linkRequest.blueskyDisplayName;
-        blueskyProfile.isVerified = true; 
+        blueskyProfile.isVerified = true;
 
         user.persist();
 
@@ -216,7 +216,7 @@ public class UserResource {
                     .entity(Map.of("message", "Commission card not found"))
                     .build();
         }
-        
+
         return Response.ok(new CommissionCardDto(commissionCard)).build();
     }
 
@@ -238,7 +238,7 @@ public class UserResource {
                     .entity(Map.of("message", "Only artists can have commission cards"))
                     .build();
         }
-        
+
         Principal principal = identity.getPrincipal();
         if (principal == null || !username.equals(principal.getName())) {
             return Response.status(Response.Status.FORBIDDEN)
@@ -248,8 +248,9 @@ public class UserResource {
 
         Artist artist = (Artist) user;
         if (artist.commissionCard != null) {
-             return Response.status(Response.Status.CONFLICT)
-                    .entity(Map.of("message", "Artist already has a commission card. Use PUT to update or DELETE first."))
+            return Response.status(Response.Status.CONFLICT)
+                    .entity(Map.of("message",
+                            "Artist already has a commission card. Use PUT to update or DELETE first."))
                     .build();
         }
 
@@ -257,16 +258,16 @@ public class UserResource {
         commissionCard.title = cardDetails.title;
         commissionCard.description = cardDetails.description;
         commissionCard.elements = new ArrayList<>();
-        
+
         artist.commissionCard = commissionCard;
         commissionCard.artist = artist;
-        
+
         commissionCard.persist();
         artist.persist();
 
         return Response.status(Response.Status.CREATED)
-                       .entity(new CommissionCardDto(commissionCard))
-                       .build();
+                .entity(new CommissionCardDto(commissionCard))
+                .build();
     }
 
     @DELETE
@@ -286,7 +287,7 @@ public class UserResource {
                     .entity(Map.of("message", "Only artists can have commission cards"))
                     .build();
         }
-        
+
         // Add authorization check
         Principal principal = identity.getPrincipal();
         if (principal == null || !username.equals(principal.getName())) {
@@ -304,8 +305,9 @@ public class UserResource {
         }
 
         artist.commissionCard = null; // This will trigger orphanRemoval if configured
-        // commissionCard.delete(); // Not strictly necessary if orphanRemoval=true and artist.persist() is called
-                                 // but explicit delete is also fine.
+        // commissionCard.delete(); // Not strictly necessary if orphanRemoval=true and
+        // artist.persist() is called
+        // but explicit delete is also fine.
         artist.persist(); // Persist artist to save the nullification of the relationship
 
         return Response.ok(Map.of("message", "Commission card deleted successfully")).build();
@@ -335,10 +337,10 @@ public class UserResource {
         }
 
         SocialProfile profileToRemove = user.socialProfiles.stream()
-            .filter(profile -> profile.platform.equalsIgnoreCase(platform) &&
-                               profile.username.equalsIgnoreCase(accountUsername))
-            .findFirst()
-            .orElse(null);
+                .filter(profile -> profile.platform.equalsIgnoreCase(platform) &&
+                        profile.username.equalsIgnoreCase(accountUsername))
+                .findFirst()
+                .orElse(null);
 
         if (profileToRemove == null) {
             return Response.status(Response.Status.NOT_FOUND)
@@ -358,7 +360,7 @@ public class UserResource {
             // Check if there are any other verified Bluesky accounts remaining
             boolean hasOtherVerifiedBluesky = user.socialProfiles.stream()
                     .anyMatch(profile -> "bluesky".equalsIgnoreCase(profile.platform) && profile.isVerified);
-            
+
             if (!hasOtherVerifiedBluesky) {
                 artist.verified = false;
                 artist.persist();
@@ -433,14 +435,15 @@ public class UserResource {
         Tag tag = Tag.findByName(tagName);
         if (tag == null) {
             return Response.status(Response.Status.NOT_FOUND)
-                    .entity(Map.of("message", "Tag '" + tagName + "' not found on this artist or system")) // Clarify message
+                    .entity(Map.of("message", "Tag '" + tagName + "' not found on this artist or system")) // Clarify
+                                                                                                           // message
                     .build();
         }
 
         Artist artist = (Artist) user;
-        
+
         if (artist.relatedTags == null || !artist.relatedTags.contains(tag)) {
-             return Response.status(Response.Status.NOT_FOUND)
+            return Response.status(Response.Status.NOT_FOUND)
                     .entity(Map.of("message", "Tag '" + tagName + "' not associated with this artist"))
                     .build();
         }
@@ -479,7 +482,8 @@ public class UserResource {
 
         Artist artist = (Artist) user;
         artist.setOpenForCommissions(isOpen); // This method in Artist.java already handles persistence
-        // artist.persist(); // The setOpenForCommissions method in Artist already calls persist.
+        // artist.persist(); // The setOpenForCommissions method in Artist already calls
+        // persist.
 
         return Response.ok(Map.of(
                 "message", "Commission status updated successfully",
@@ -495,11 +499,17 @@ public class UserResource {
 
     public static class ErrorResponse {
         public String message;
-        public ErrorResponse(String message) { this.message = message; }
+
+        public ErrorResponse(String message) {
+            this.message = message;
+        }
     }
 
     public static class SuccessResponse {
         public String message;
-        public SuccessResponse(String message) { this.message = message; }
+
+        public SuccessResponse(String message) {
+            this.message = message;
+        }
     }
 }

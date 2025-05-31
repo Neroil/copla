@@ -97,8 +97,10 @@ const BlueskyVerif: React.FC<BlueskyVerifProps> = ({ appUsername, onClose, onSuc
                 scope: 'atproto transition:generic'
             });
 
-            // Store the app username in session storage for retrieval after redirect
+            // Store the app username and UI state for retrieval after redirect
             sessionStorage.setItem('bluesky_verification_for', appUsername);
+            sessionStorage.setItem('copla_show_social_management', 'true');
+            sessionStorage.setItem('copla_show_bluesky_verification', 'true');
 
             // Redirect the user to the authorization page
             window.location.href = url.toString();

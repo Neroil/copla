@@ -8,9 +8,10 @@ public class TagDto {
     public String description;
     public String category;
     public boolean isActive;
-    
-    public TagDto() {}
-    
+
+    public TagDto() {
+    }
+
     public TagDto(Tag tag) {
         this.id = tag.id;
         this.name = tag.name;

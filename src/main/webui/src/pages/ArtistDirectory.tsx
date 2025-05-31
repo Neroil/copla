@@ -11,6 +11,7 @@ import { LoadingSpinner } from "../ui-component/LoadingSpinner";
 import { ErrorAlert } from "../ui-component/ErrorAlert";
 import { UserCard } from "../ui-component/UserCard";
 import { EmptyState } from "../ui-component/EmptyState";
+import { Filter } from "lucide-react";
 
 // Define interface for user social profiles
 interface SocialProfile {
@@ -41,13 +42,6 @@ interface UserData {
     relatedTags?: string[]; // Use this for real artist tags
     galleryImages?: string[]; // Add gallery images array
 }
-
-
-const FilterIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className || "w-6 h-6"}>
-        <path fillRule="evenodd" d="M3.792 2.938A49.069 49.069 0 0112 2.25c2.797 0 5.54.236 8.209.688a1.857 1.857 0 011.541 1.836v1.044a3 3 0 01-.879 2.121l-6.182 6.182a1.5 1.5 0 00-.439 1.061v2.927a3 3 0 01-1.658 2.684l-1.757.878A.75.75 0 019.75 21v-5.818a1.5 1.5 0 00-.44-1.06L3.13 7.938a3 3 0 01-.879-2.121V4.774c0-.897.64-1.683 1.542-1.836z" clipRule="evenodd" />
-    </svg>
-);
 
 function ArtistDirectory() {
     const [userList, setUserList] = useState<UserData[]>([]);
@@ -162,8 +156,8 @@ function ArtistDirectory() {
 
         // Tags filter - enhanced to work with custom tags
         const matchesTags = selectedTags.length === 0 ||
-            selectedTags.some(tag => 
-                artist.tags?.some(artistTag => 
+            selectedTags.some(tag =>
+                artist.tags?.some(artistTag =>
                     artistTag.toLowerCase().includes(tag.toLowerCase())
                 )
             );
@@ -281,7 +275,7 @@ function ArtistDirectory() {
                                         color="primary"
                                         className="flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
                                     >
-                                        <FilterIcon className="h-4 w-4" /> 
+                                        <Filter className="h-4 w-4" />
                                         Filters
                                         {(selectedTags.length > 0 || availabilityFilter.length > 0 || priceRange[0] > 0 || priceRange[1] < 500) && (
                                             <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
@@ -346,7 +340,7 @@ function ArtistDirectory() {
                                         <Typography variant="small" className="font-semibold mb-3 text-purple-700 dark:text-purple-200 flex items-center gap-2">
                                             Art Specialties
                                         </Typography>
-                                        
+
                                         {/* Custom Tag Input */}
                                         <div className="mb-4">
                                             <div className="flex gap-2">

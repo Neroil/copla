@@ -9,23 +9,21 @@ public class CommissionCardDto {
     public String title;
     public String description;
     public List<CommissionCardElementDto> elements;
-    
+
     public CommissionCardDto() {
-        // Default constructor for JSON serialization
     }
-    
+
     public CommissionCardDto(CommissionCard entity) {
         this.id = entity.id;
         this.title = entity.title;
         this.description = entity.description;
-        
+
         this.elements = new ArrayList<>();
         if (entity.elements != null) {
-            entity.elements.forEach(element -> 
-                this.elements.add(new CommissionCardElementDto(element)));
+            entity.elements.forEach(element -> this.elements.add(new CommissionCardElementDto(element)));
         }
     }
-    
+
     public CommissionCard toEntity() {
         CommissionCard card = new CommissionCard();
         card.id = this.id;

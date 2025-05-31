@@ -36,7 +36,6 @@ public class User extends PanacheEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     public List<SocialProfile> socialProfiles = new ArrayList<>();
 
-
     public static void add(String username, String password) {
         add(username, password, null);
     }

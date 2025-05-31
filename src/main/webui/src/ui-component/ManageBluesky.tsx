@@ -8,10 +8,18 @@ interface ManageBlueskyProps {
     username: string;
     onClose: () => void;
     onSuccess: () => void;
+    autoShowVerification?: boolean;
 }
 
-const ManageBluesky: React.FC<ManageBlueskyProps> = ({ username, onClose, onSuccess }) => {
-    const [mode, setMode] = useState<'select' | 'verify' | 'manual'>('select');
+const ManageBluesky: React.FC<ManageBlueskyProps> = ({ 
+    username, 
+    onClose, 
+    onSuccess, 
+    autoShowVerification = false 
+}) => {
+    const [mode, setMode] = useState<'select' | 'verify' | 'manual'>(
+        autoShowVerification ? 'verify' : 'select'
+    );
     const [blueskyHandle, setBlueskyHandle] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);

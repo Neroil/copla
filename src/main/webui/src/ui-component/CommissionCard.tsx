@@ -293,7 +293,7 @@ export const CommissionCard: React.FC<CommissionCardProps> = ({
       <CardFooter className="pt-0 pb-6 px-6">
         <div className="flex flex-col sm:flex-row gap-3">
           <CustomFormButton 
-            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 flex-1"
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 flex-1 text-white dark:text-white"
             color="primary"
           >
             Request Commission

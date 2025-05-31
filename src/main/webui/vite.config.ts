@@ -5,19 +5,26 @@ import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  // depending on your application, base can also be "/"
-  base: '',
+  base: '/',
   plugins: [
       react(),
       viteTsconfigPaths(),
       tailwindcss(),
   ],
+  build: {
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        assetFileNames: 'assets/[name]-[hash][extname]',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js'
+      }
+    }
+  },
   server: {
       host: true,
       allowedHosts: true,
-    // this ensures that the browser opens upon server start
     open: false,
-    // this sets a default port to 3000, you can change this
     port: 3000,
   },
 });

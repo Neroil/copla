@@ -10,7 +10,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
 @Entity
-public class CommissionCard extends PanacheEntity{
+public class CommissionCard extends PanacheEntity {
 
     public String title;
     public String description;
@@ -21,14 +21,12 @@ public class CommissionCard extends PanacheEntity{
     @OneToOne(mappedBy = "commissionCard")
     public Artist artist;
 
-
     public void addElement(CommissionCardElement element) {
         if (elements == null) {
             elements = new ArrayList<>();
         }
         elements.add(element);
     }
-
 
     public void removeElement(CommissionCardElement element) {
         if (elements != null) {

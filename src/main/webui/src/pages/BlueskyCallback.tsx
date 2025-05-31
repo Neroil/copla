@@ -24,8 +24,9 @@ const BlueskyCallback = () => {
 
                 // Success path - redirect to profile or original page
                 if (username) {
-                    navigate(`/users/${username}`, { replace: true });
+                    // Clean up only the verification key, keep UI state keys for UserProfile
                     sessionStorage.removeItem('bluesky_verification_for');
+                    navigate(`/users/${username}`, { replace: true });
                 } else {
                     navigate("/", { replace: true });
                 }
