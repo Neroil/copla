@@ -1,10 +1,8 @@
 package art.entities;
 
-
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 
-import java.time.LocalTime;
 import java.util.List;
 
 @Entity
@@ -17,7 +15,6 @@ public class Gallery extends PanacheEntity {
     @JoinColumn(name = "artist_id")
     @ManyToOne
     public Artist artist;
-
 
     public static void add(String name, String description, Artist artist) {
         Gallery gallery = new Gallery();

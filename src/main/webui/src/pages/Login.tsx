@@ -1,98 +1,102 @@
-import { useLocation } from "react-router"; // Recommended to use react-router-dom
-import {
-    Card,
-    CardHeader,
-    CardBody,
-    CardFooter,
-    Input,
-    Button,
-    Typography,
-    Alert,
-} from "@material-tailwind/react";
-import { PageLayout } from "../ui-component/PageLayout"; // Adjust path as needed
-import React from "react";
+import { useLocation } from "react-router";
+import { Alert, Typography } from "@material-tailwind/react";
+import { PageLayout } from "../ui-component/PageLayout";
+import { useState } from "react";
 import CustomFormButton from "../ui-component/CustomFormButton";
-
-// Placeholder Icon
-const LockClosedIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className || "w-5 h-5"}>
-        <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
-    </svg>
-);
-const ExclamationTriangleIcon = ({className}: {className?: string}) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-    </svg>
-);
-
+import { GradientCard } from '../ui-component/GradientCard';
+import { FormInput } from '../ui-component/FormInput';
+import { GRADIENT_CLASSES } from '../constants/styles';
+import { 
+    Lock, 
+    AlertTriangle, 
+    User, 
+    Eye, 
+    EyeOff, 
+    LogIn
+} from "lucide-react";
+import { motion } from "framer-motion";
 
 function Login() {
     const location = useLocation();
     const params = new URLSearchParams(location.search);
     const hasError = params.get("error") === "true";
+    const [showPassword, setShowPassword] = useState(false);
+
+    const passwordToggle = (
+        <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="text-gray-400 hover:text-gray-600"
+        >
+            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+        </button>
+    );
+
+    const footer = (
+        <Typography variant="small" className="flex justify-center items-center text-gray-600 dark:text-gray-400">
+            Don't have an account?
+            <Typography
+                as="a"
+                href="/register"
+                className="ml-2 font-bold text-purple-600 hover:text-purple-700 hover:underline transition-colors duration-200"
+            >
+                Register Here
+            </Typography>
+        </Typography>
+    );
 
     return (
         <PageLayout pageTitle="Welcome Back!" contentMaxWidth="max-w-md">
-            <Card className="w-full shadow-2xl">
-                <CardHeader
-                    variant="gradient"
-                    className="mb-4 grid h-28 place-items-center"
-                >
-                    <div className="flex flex-col items-center">
-                        <LockClosedIcon className="w-12 h-12 text-white mb-2" />
-                        <Typography variant="h4" >
-                            Sign In
-                        </Typography>
-                    </div>
-                </CardHeader>
-                <CardBody className="flex flex-col gap-6 p-6">
-                    {hasError && (
-                        <Alert
-                            color="error"
-                            icon={<ExclamationTriangleIcon className="h-5 w-5" />}
-                            className="mb-4"
-                        >
+            <GradientCard
+                title="Welcome Back"
+                subtitle="Sign in to continue"
+                icon={Lock}
+                footer={footer}
+            >
+                {hasError && (
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                    >
+                        <Alert color="error" className="flex items-center gap-2">
+                            <AlertTriangle className="h-5 w-5" />
                             Invalid username or password. Please try again.
                         </Alert>
-                    )}
-                    <form action="/j_security_check" method="post" className="flex flex-col gap-6">
-                        <Input
-                            type="text"
-                            placeholder="Username"
-                            name="j_username"
-                            size="lg"
-                            required
-                        />
-                        <Input
-                            type="password"
-                            placeholder="Password"
-                            name="j_password"
-                            size="lg"
-                            required
-                        />
+                    </motion.div>
+                )}
+
+                <form action="/j_security_check" method="post" className="flex flex-col gap-5">
+                    <FormInput
+                        type="text"
+                        placeholder="Username"
+                        name="j_username"
+                        icon={User}
+                        required
+                    />
+
+                    <FormInput
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Password"
+                        name="j_password"
+                        icon={Lock}
+                        rightElement={passwordToggle}
+                        required
+                    />
+
+                    <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
                         <CustomFormButton
                             type="submit"
-                            className="bg-purple-600 hover:bg-purple-700 text-white font-medium"
+                            className={`w-full ${GRADIENT_CLASSES.primaryButton} py-4 flex items-center justify-center gap-2`}
                         >
-
-                            Sign in
+                            <LogIn className="h-5 w-5" />
+                            Sign In
                         </CustomFormButton>
-                    </form>
-                </CardBody>
-                <CardFooter className="pt-2 text-center">
-                    <Typography variant="small" className="flex justify-center">
-                        Don't have an account?
-                        <Typography
-                            as="a"
-                            href="/register"
-                            type="small"
-                            className="ml-1 font-bold underline hover:text-purple-700 hoverdark:text-purple-400"
-                        >
-                            Register Here
-                        </Typography>
-                    </Typography>
-                </CardFooter>
-            </Card>
+                    </motion.div>
+                </form>
+            </GradientCard>
         </PageLayout>
     );
 }

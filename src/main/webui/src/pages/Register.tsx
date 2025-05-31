@@ -1,34 +1,23 @@
 import React, { useState } from 'react';
-import {
-    Card,
-    CardHeader,
-    CardBody,
-    CardFooter,
-    Input,
-    Typography,
-    Alert,
-    Spinner
-} from "@material-tailwind/react";
+import { Alert, Spinner, Typography } from "@material-tailwind/react";
 import { PageLayout } from "../ui-component/PageLayout";
 import CustomFormButton from '../ui-component/CustomFormButton';
-import { UserIcon, PaletteIcon } from "../ui-component/CustomIcons";
-
-// Placeholder Icons
-const UserPlusIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className || "w-5 h-5"}>
-        <path d="M11 5a3 3 0 11-6 0 3 3 0 016 0zM4.25 8.5c-.69 0-1.25.56-1.25 1.25V12h2.5V9.75c0-.69-.56-1.25-1.25-1.25H4.25zM10.75 8.5c-.69 0-1.25.56-1.25 1.25V12h2.5V9.75c0-.69-.56-1.25-1.25-1.25H10.75zM15.75 9.75c0-.69-.56-1.25-1.25-1.25H13V12h2.5V9.75zM6 14.75c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75V14a2 2 0 00-2-2H7a2 2 0 00-2 2v.75z" />
-    </svg>
-);
-const ExclamationTriangleIcon = ({className}: {className?: string}) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-    </svg>
-);
-const CheckCircleIcon = ({className}: {className?: string}) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-);
+import { GradientCard } from '../ui-component/GradientCard';
+import { FormInput } from '../ui-component/FormInput';
+import { UserTypeToggle } from '../ui-component/UserTypeToggle';
+import { GRADIENT_CLASSES } from '../constants/styles';
+import {
+    UserPlus,
+    AlertTriangle,
+    CheckCircle,
+    User,
+    Mail,
+    Lock,
+    Eye,
+    EyeOff,
+    ArrowRight
+} from "lucide-react";
+import { motion } from "framer-motion";
 
 function Register() {
     const [username, setUsername] = useState('');
@@ -39,6 +28,8 @@ function Register() {
     const [success, setSuccess] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isArtist, setIsArtist] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -69,11 +60,11 @@ function Register() {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                 },
-                body: JSON.stringify({ 
-                    name: username, 
-                    password: password, 
+                body: JSON.stringify({
+                    name: username,
+                    password: password,
                     email: email,
-                    isArtist: isArtist // Send the role information
+                    isArtist: isArtist
                 }),
             });
 
@@ -97,125 +88,136 @@ function Register() {
         }
     };
 
+    const passwordToggle = (
+        <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="text-gray-400 hover:text-gray-600"
+        >
+            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+        </button>
+    );
+
+    const confirmPasswordToggle = (
+        <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="text-gray-400 hover:text-gray-600"
+        >
+            {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+        </button>
+    );
+
+    const footer = (
+        <Typography variant="small" className="flex justify-center items-center text-gray-600 dark:text-gray-400">
+            Already have an account?
+            <Typography
+                as="a"
+                href="/login"
+                className="ml-2 font-bold text-purple-600 hover:text-purple-700 hover:underline transition-colors duration-200"
+            >
+                Sign In
+            </Typography>
+        </Typography>
+    );
+
     return (
-        <PageLayout pageTitle="Join CoPla Today!" contentMaxWidth="max-w-md">
-            <Card className="w-full shadow-2xl">
-                <CardHeader
-                    variant="gradient"
-                    color="purple"
-                    className="mb-4 grid h-28 place-items-center"
-                >
-                    <div className="flex flex-col items-center">
-                        <UserPlusIcon className="w-12 h-12 text-white mb-2" />
-                        <Typography variant="h4">
-                            Create Account
-                        </Typography>
-                    </div>
-                </CardHeader>
-                <CardBody className="flex flex-col gap-6 p-6">
-                    {error && (
-                        <Alert color="error" className="mb-4">
-                            <ExclamationTriangleIcon className="h-5 w-5 inline-block mr-2" />
+        <PageLayout pageTitle="Join CoPla Today!" contentMaxWidth="max-w-lg">
+            <GradientCard
+                title="Join CoPla"
+                subtitle={isArtist ? "Start showcasing your art" : "Find amazing artists"}
+                icon={UserPlus}
+                footer={footer}
+            >
+                {error && (
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                    >
+                        <Alert color="error" className="flex items-center gap-2">
+                            <AlertTriangle className="h-5 w-5" />
                             {error}
                         </Alert>
-                    )}
-                    {success && (
-                        <Alert color="success" className="mb-4">
-                            <CheckCircleIcon className="h-5 w-5 inline-block mr-2" />
+                    </motion.div>
+                )}
+                {success && (
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                    >
+                        <Alert color="success" className="flex items-center gap-2">
+                            <CheckCircle className="h-5 w-5" />
                             {success}
                         </Alert>
-                    )}
-                    
-                    {/* Role Selection Toggle */}
-                    <div className="w-full relative px-2 py-3">
-                        <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 rounded-xl p-1 relative">
-                            {/* Background slider that moves based on selection */}
-                            <div 
-                                className={`absolute top-1 bottom-1 w-1/2 bg-purple-500 rounded-lg shadow-md transform transition-all duration-300 ease-in-out ${
-                                    isArtist ? 'translate-x-full' : 'translate-x-0'
-                                }`} 
-                            />
-                            
-                            {/* Client option */}
-                            <button
-                                type="button"
-                                onClick={() => setIsArtist(false)}
-                                className={`flex-1 flex justify-center items-center py-3 px-2 rounded-lg z-10 transition-all duration-200 ${
-                                    !isArtist ? 'text-white font-medium' : 'text-gray-700 dark:text-gray-300'
-                                }`}
-                            >
-                                <UserIcon className={`h-5 w-5 mr-2 ${!isArtist ? 'text-white' : ''}`} />
-                                I am a Client
-                            </button>
-                            
-                            {/* Artist option */}
-                            <button
-                                type="button"
-                                onClick={() => setIsArtist(true)}
-                                className={`flex-1 flex justify-center items-center py-3 px-2 rounded-lg z-10 transition-all duration-200 ${
-                                    isArtist ? 'text-white font-medium' : 'text-gray-700 dark:text-gray-300'
-                                }`}
-                            >
-                                <PaletteIcon className={`h-5 w-5 mr-2 ${isArtist ? 'text-white' : ''}`} />
-                                I am an Artist
-                            </button>
-                        </div>
-                    </div>
+                    </motion.div>
+                )}
 
-                    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-                        <Input
-                            type="text"
-                            placeholder="Username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            size="lg"
-                            required
-                        />
-                        <Input
-                            type="email"
-                            placeholder="Email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            size="lg"
-                            required
-                        />
-                        <Input
-                            type="password"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            size="lg"
-                            required
-                        />
-                        <Input
-                            type="password"
-                            placeholder="Confirm Password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            size="lg"
-                            required
-                        />
+                <UserTypeToggle
+                    isArtist={isArtist}
+                    setIsArtist={setIsArtist}
+                    variant="register"
+                />
+
+                <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                    <FormInput
+                        type="text"
+                        placeholder="Username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        icon={User}
+                        required
+                    />
+
+                    <FormInput
+                        type="email"
+                        placeholder="Email address"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        icon={Mail}
+                        required
+                    />
+
+                    <FormInput
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        icon={Lock}
+                        rightElement={passwordToggle}
+                        required
+                    />
+
+                    <FormInput
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Confirm Password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        icon={Lock}
+                        rightElement={confirmPasswordToggle}
+                        required
+                    />
+
+                    <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
                         <CustomFormButton
                             type="submit"
                             disabled={isLoading}
+                            className={`w-full ${GRADIENT_CLASSES.primaryButton} py-4 flex items-center justify-center gap-2`}
                         >
-                            {isLoading ? <Spinner className="h-5 w-5 mx-auto text-white" /> : "Register"}
+                            {isLoading ? (
+                                <Spinner className="h-5 w-5" />
+                            ) : (
+                                <>
+                                    Create Account
+                                    <ArrowRight className="h-5 w-5" />
+                                </>
+                            )}
                         </CustomFormButton>
-                    </form>
-                </CardBody>
-                <CardFooter className="pt-2 text-center">
-                    <Typography variant="small" className="flex justify-center">
-                        Already have an account?
-                        <Typography
-                            as="a"
-                            href="/login"
-                            className="ml-1 font-bold text-purple-500 hover:underline"
-                        >
-                            Sign In
-                        </Typography>
-                    </Typography>
-                </CardFooter>
-            </Card>
+                    </motion.div>
+                </form>
+            </GradientCard>
         </PageLayout>
     );
 }

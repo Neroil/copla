@@ -16,12 +16,13 @@ public class Artwork extends PanacheEntity {
     public String description;
     public LocalDateTime timeCreated;
     public String imageUrl;
-    public Double price; //Optional
+    public Double price; // Optional
 
     @ManyToOne
     public Artist artist;
 
-    public static void add(String title, String description, LocalDateTime timeCreated, String imageUrl, Double price, Artist artist) {
+    public static void add(String title, String description, LocalDateTime timeCreated, String imageUrl, Double price,
+            Artist artist) {
         Artwork artwork = new Artwork();
         artwork.title = title;
         artwork.description = description;
@@ -39,7 +40,8 @@ public class Artwork extends PanacheEntity {
         }
     }
 
-    public static void edit(Long id, String title, String description, LocalDateTime timeCreated, String imageUrl, Double price, Artist artist) {
+    public static void edit(Long id, String title, String description, LocalDateTime timeCreated, String imageUrl,
+            Double price, Artist artist) {
         Artwork artwork = findById(id);
         if (artwork != null) {
             artwork.title = title;

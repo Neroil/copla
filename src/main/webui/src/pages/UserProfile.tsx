@@ -1,6 +1,5 @@
-// UserProfile.tsx
-import { useParams } from "react-router";
 import React, { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router";
 import {
     Alert,
     Avatar,
@@ -8,21 +7,30 @@ import {
     Card,
     CardBody,
     CardHeader,
-    Dialog,
     Spinner,
     Textarea,
-    Typography
+    Typography,
+    Switch,
+    Chip
 } from "@material-tailwind/react";
 import { PageLayout } from "../ui-component/PageLayout";
 import ManageBluesky from "../ui-component/ManageBluesky";
-import BlueskyVerif from "../resources/BlueskyVerif.tsx";
-import { useFetchUserData } from "../resources/FetchUserData"; // Import the hook
+import { useFetchUserData } from "../resources/FetchUserData";
 import CustomFormButton from "../ui-component/CustomFormButton.tsx";
-import { UserIcon, PaletteIcon } from "../ui-component/CustomIcons";
+import { PaletteIcon } from "../ui-component/CustomIcons";
+import { LoadingSpinner } from "../ui-component/LoadingSpinner";
+import { ErrorAlert } from "../ui-component/ErrorAlert";
+import { EmptyState } from "../ui-component/EmptyState";
+import {
+    useCommissionCard,
+    CommissionCard,
+    CommissionCardError,
+    CommissionCardLoading,
+    CreateCommissionCard
+} from "../ui-component/CommissionCard";
+import { CustomTagComponent } from "../ui-component/CustomTagComponent.tsx";
 
-// SocialProfile and UserData interfaces can be removed if they are identical to
-// and imported from FetchUserData.tsx or a shared types file.
-// For this example, let's assume they might have slight differences or are kept for clarity.
+// Types
 interface SocialProfile {
     platform: string;
     username: string;
@@ -30,7 +38,7 @@ interface SocialProfile {
     isVerified: boolean;
 }
 
-interface UserData { // This is the type expected by the component's rendering logic
+interface UserData {
     id: number;
     name: string;
     email: string;
@@ -39,97 +47,494 @@ interface UserData { // This is the type expected by the component's rendering l
     bio?: string;
     socialProfiles?: SocialProfile[];
     role?: string;
+    isOpenForCommissions?: boolean;
+    relatedTags?: string[];
 }
 
-
-// --- Icons (VerifiedIcon, PhotoIcon, PencilIcon, ExclamationTriangleIcon, getPlatformIcon) remain the same ---
-// Define VerifiedIcon
+// Icons
 const VerifiedIcon = ({ className }: { className?: string }) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className || "w-5 h-5"}>
-        <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16zm-1-13h2v6h-2zm0 8h2v2h-2z" />
+        <path fillRule="evenodd" d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.49 4.49 0 01-3.498-1.306 4.491 4.491 0 01-1.307-3.498A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.49 4.49 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
     </svg>
 );
 
-// Placeholder Icons
-const PhotoIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className || "w-5 h-5"}>
-        <path fillRule="evenodd"
-            d="M1 5.25A2.25 2.25 0 013.25 3h13.5A2.25 2.25 0 0119 5.25v9.5A2.25 2.25 0 0116.75 17H3.25A2.25 2.25 0 011 14.75v-9.5zm1.5 0A.75.75 0 013.25 4.5h13.5A.75.75 0 0117.5 5.25v9.5A.75.75 0 0116.75 16H3.25a.75.75 0 01-.75-.75v-9.5zm6.5 1.5a.75.75 0 00-1.5 0v4.69L7.31 9.81a.75.75 0 00-1.12.815l1.914 3.313a.75.75 0 001.274.033l2.566-4.445a.75.75 0 00-1.274-.736L9 11.31V6.75z"
-            clipRule="evenodd" />
-    </svg>
-);
 const PencilIcon = ({ className }: { className?: string }) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className || "w-5 h-5"}>
-        <path
-            d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" />
+        <path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" />
     </svg>
 );
+
 const ExclamationTriangleIcon = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"
-        className={className || "w-6 h-6"}>
-        <path strokeLinecap="round" strokeLinejoin="round"
-            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
     </svg>
 );
+
+const PhotoIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className || "w-5 h-5"}>
+        <path fillRule="evenodd" d="M1 5.25A2.25 2.25 0 013.25 3h13.5A2.25 2.25 0 0119 5.25v9.5A2.25 2.25 0 0116.75 17H3.25A2.25 2.25 0 011 14.75v-9.5zm1.5 0A.75.75 0 013.25 4.5h13.5A.75.75 0 0117.5 5.25v9.5A.75.75 0 0116.75 16H3.25a.75.75 0 01-.75-.75v-9.5z" clipRule="evenodd" />
+    </svg>
+);
+
 const getPlatformIcon = (platform: string, className: string) => {
     switch (platform.toLowerCase()) {
         case "bluesky":
             return (
-                <svg
-                    viewBox="0 0 600 530"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className={className}
-                >
-                    <path
-                        d="m135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.795 0 17.712-10.155 148.79-16.111 170.07-20.703 73.984-96.144 92.854-163.25 81.433 117.3 19.964 147.14 86.092 82.697 152.22-122.39 125.59-175.91-31.511-189.63-71.766-2.514-7.3797-3.6904-10.832-3.7077-7.8964-0.0174-2.9357-1.1937 0.51669-3.7077 7.8964-13.714 40.255-67.233 197.36-189.63 71.766-64.444-66.128-34.605-132.26 82.697-152.22-67.108 11.421-142.55-7.4491-163.25-81.433-5.9562-21.282-16.111-152.36-16.111-170.07 0-88.687 77.742-60.816 125.72-24.795z"
-                        fill="#1185fe" />
+                <svg viewBox="0 0 600 530" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+                    <path d="m135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.795 0 17.712-10.155 148.79-16.111 170.07-20.703 73.984-96.144 92.854-163.25 81.433 117.3 19.964 147.14 86.092 82.697 152.22-122.39 125.59-175.91-31.511-189.63-71.766-2.514-7.3797-3.6904-10.832-3.7077-7.8964-0.0174-2.9357-1.1937 0.51669-3.7077 7.8964-13.714 40.255-67.233 197.36-189.63 71.766-64.444-66.128-34.605-132.26 82.697-152.22-67.108 11.421-142.55-7.4491-163.25-81.433-5.9562-21.282-16.111-152.36-16.111-170.07 0-88.687 77.742-60.816 125.72-24.795z" fill="#1185fe" />
                 </svg>
             );
-        case "twitter": // Example, replace with actual icon if needed
-            return <PencilIcon className={className} />; // Placeholder, replace with actual Twitter/X icon
         default:
             return <ExclamationTriangleIcon className={className} />;
     }
 };
 
-const SocialVerificationBadge = ({
-    isVerified,
+// Components
+const ManageButton = ({
     isCurrentUser,
-    onVerify
+    onClick
 }: {
-    isVerified: boolean;
     isCurrentUser: boolean;
-    onVerify?: () => void;
+    onClick: () => void;
 }) => {
-    if (isVerified) {
-        return (
-            <div className="flex items-center text-green-600 dark:text-green-400" title="Verified Account">
-                <VerifiedIcon className="w-5 h-5 mr-1" />
-                <span className="font-medium">Verified</span>
-            </div>
-        );
-    }
+    if (!isCurrentUser) return null;
+
     return (
-        <div className="flex items-center text-red-600 dark:text-red-400" title="Unverified Account">
-            <ExclamationTriangleIcon className="w-5 h-5 mr-1" />
-            <span className="font-medium mr-2">Unverified</span>
-            {isCurrentUser && (
-                <Button
-                    size="sm"
-                    variant="outline"
-                    color="error" // Material Tailwind uses "red", not "error" for Button color
-                    className="py-1 px-2 text-xs"
-                    onClick={onVerify}
-                >
-                    Verify
-                </Button>
+        <CustomFormButton
+            size="sm"
+            variant="outline"
+            color="primary"
+            onClick={onClick}
+            className="flex items-center gap-1 !text-xs !py-2 !px-4"
+            isFullWidth={false}
+        >
+            <PencilIcon className="w-4 h-4" />
+            Manage
+        </CustomFormButton>
+    );
+}
+
+const ProfileHeader = ({
+    user,
+    isCurrentUser,
+    uploading,
+    uploadError,
+    onProfilePicUpload
+}: {
+    user: UserData;
+    isCurrentUser: boolean;
+    uploading: boolean;
+    uploadError: string | null;
+    onProfilePicUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}) => {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    return (
+        <CardHeader
+            floated={false}
+            shadow={false}
+            className="m-0 w-full rounded-none bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-700 dark:to-indigo-700 p-6"
+        >
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+                <div className="relative group">
+                    <Avatar
+                        size="xxl"
+                        src={user.profilePicPath || `https://avatar.iran.liara.run/public/boy?username=${user.name}`}
+                        alt={`${user.name}'s profile picture`}
+                        className="border-4 border-white dark:border-gray-800 shadow-lg"
+                    />
+                    {isCurrentUser && (
+                        <label
+                            htmlFor="profilePicInput"
+                            className="absolute bottom-1 right-1 bg-white dark:bg-gray-700 p-2 rounded-full cursor-pointer shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors group-hover:opacity-100 opacity-75"
+                        >
+                            <PencilIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                            <input
+                                id="profilePicInput"
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={onProfilePicUpload}
+                                className="sr-only"
+                                disabled={uploading}
+                            />
+                        </label>
+                    )}
+                </div>
+                <div className="text-center sm:text-left">
+                    <Typography variant="h3" className="font-bold text-white dark:text-gray-200">
+                        {user.name}
+                    </Typography>
+                    <Typography className="font-normal text-gray-200 dark:text-gray-300">
+                        {user.email}
+                    </Typography>
+                    <Typography className="font-normal text-sm text-gray-300 dark:text-gray-400 mt-1">
+                        Joined on: {new Date(user.timeCreated).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        })}
+                    </Typography>
+                </div>
+            </div>
+            {isCurrentUser && uploading && (
+                <div className="mt-4 flex items-center justify-center text-white">
+                    <Spinner className="h-4 w-4 mr-2" />
+                    Uploading picture...
+                </div>
             )}
-        </div>
+            {isCurrentUser && uploadError && (
+                <Alert color="error" className="mt-4 flex items-center">
+                    <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
+                    {uploadError || "Upload failed!"}
+                </Alert>
+            )}
+        </CardHeader>
     );
 };
 
+// Enhanced Stats/Quick Info Component
+const InfoCard = ({ user, isCurrentUser, isUpdating, onToggle }: { 
+    user: UserData; 
+    isCurrentUser: boolean;
+    isUpdating: boolean;
+    onToggle: (checked: boolean) => void;
+}) => (
+    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <CardBody className="p-6">
+            <Typography variant="h6" className="mb-4 font-semibold text-gray-900 dark:text-gray-100">
+                Info
+            </Typography>
+            <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                    <Typography variant="small" className="text-gray-600 dark:text-gray-400">
+                        Role:
+                    </Typography>
+                    <Chip
+                        color={user.role === 'artist' ? 'primary' : 'secondary'}
+                        variant="gradient"
+                        size="sm"
+                        className="capitalize px-3 py-1.5 text-white dark:text-gray-100"
+                    >
+                        {user.role || 'User'}
+                    </Chip>
+                </div>
+                <div className="flex justify-between items-center">
+                    <Typography variant="small" className="text-gray-600 dark:text-gray-400">
+                        Joined:
+                    </Typography>
+                    <Typography variant="small" className="font-medium text-gray-900 dark:text-gray-100">
+                        {new Date(user.timeCreated).toLocaleDateString('en-US', {
+                            month: 'short',
+                            year: 'numeric'
+                        })}
+                    </Typography>
+                </div>
+                {user.role === 'artist' && (
+                    <>
+                        <div className="flex justify-between items-center">
+                            <Typography variant="small" className="text-gray-600 dark:text-gray-400">
+                                Commissions:
+                            </Typography>
+                            {isCurrentUser ? (
+                                <Switch
+                                    checked={user.isOpenForCommissions || false}
+                                    onChange={(e) => onToggle(e.target.checked)}
+                                    disabled={isUpdating}
+                                    color="success"
+                                />
+                            ) : (
+                                <Chip
+                                    color={user.isOpenForCommissions ? 'success' : 'error'}
+                                    size="sm"
+                                    className="capitalize px-3 py-1.5 text-white dark:text-gray-100"
+                                >
+                                    {user.isOpenForCommissions ? 'Open' : 'Closed'}
+                                </Chip>
+                            )}
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <Typography variant="small" className="text-gray-600 dark:text-gray-400">
+                                Specialties:
+                            </Typography>
+                            <Typography variant="small" className="font-medium text-gray-900 dark:text-gray-100">
+                                {user.relatedTags?.length || 0} tag{(user.relatedTags?.length || 0) !== 1 ? 's' : ''}
+                            </Typography>
+                        </div>
+                    </>
+                )}
+            </div>
+        </CardBody>
+    </Card>
+);
 
+// Compact Tags Section Component
+const CompactTagsSection = ({
+    user,
+    isCurrentUser,
+    availableTags,
+    tagManagementOpen,
+    onToggleManagement,
+    onAddTag,
+    onRemoveTag
+}: {
+    user: UserData;
+    isCurrentUser: boolean;
+    availableTags: string[];
+    tagManagementOpen: boolean;
+    onToggleManagement: () => void;
+    onAddTag: (tag: string) => void;
+    onRemoveTag: (tag: string) => void;
+}) => (
+    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <CardBody className="p-6">
+            <div className="flex items-center justify-between mb-4">
+                <Typography variant="h6" className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                    Tags
+                </Typography>
+                <ManageButton isCurrentUser={isCurrentUser} onClick={onToggleManagement} />
+            </div>
+            
+            <div className="flex flex-wrap gap-2 mb-3">
+                {user.relatedTags && user.relatedTags.length > 0 ? (
+                    user.relatedTags.map((tag) => (
+                        <CustomTagComponent
+                            key={tag}
+                            tag={tag}
+                            variant="current"
+                            showRemove={isCurrentUser && tagManagementOpen}
+                            onRemove={() => onRemoveTag(tag)}
+                        />
+                    ))
+                ) : (
+                    <Typography variant="small" className="text-gray-500 dark:text-gray-400 italic">
+                        {isCurrentUser ? "No tags added yet" : "No specialties listed"}
+                    </Typography>
+                )}
+            </div>
+
+            {isCurrentUser && tagManagementOpen && (
+                <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <Typography variant="small" className="font-medium mb-2 text-gray-700 dark:text-gray-300">
+                        Add Tags:
+                    </Typography>
+                    <div className="flex flex-wrap gap-2">
+                        {availableTags
+                            .filter(tag => !user.relatedTags?.includes(tag))
+                            .map((tag) => (
+                                <CustomTagComponent
+                                    key={tag}
+                                    tag={tag}
+                                    variant="add"
+                                    onClick={() => onAddTag(tag)}
+                                />
+                            ))}
+                    </div>
+                    {availableTags.filter(tag => !user.relatedTags?.includes(tag)).length === 0 && (
+                        <Typography variant="small" className="text-gray-500 dark:text-gray-400 italic">
+                            All available tags have been added!
+                        </Typography>
+                    )}
+                </div>
+            )}
+        </CardBody>
+    </Card>
+);
+
+// Enhanced Bio Section Component
+const BioSection = ({
+    user,
+    isCurrentUser,
+    bioText,
+    setBioText,
+    isEditingBio,
+    setIsEditingBio,
+    isSavingBio,
+    onSaveBio
+}: {
+    user: UserData;
+    isCurrentUser: boolean;
+    bioText: string;
+    setBioText: (text: string) => void;
+    isEditingBio: boolean;
+    setIsEditingBio: (editing: boolean) => void;
+    isSavingBio: boolean;
+    onSaveBio: () => void;
+}) => (
+    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <CardBody className="p-6">
+            <div className="flex items-center justify-between mb-4">
+                <Typography variant="h5" className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    About {isCurrentUser ? "Me" : user.name}
+                </Typography>
+                {isCurrentUser && !isEditingBio && (
+                    <CustomFormButton
+                        size="sm"
+                        variant="outline"
+                        color="primary"
+                        onClick={() => {
+                            setBioText(user.bio || "");
+                            setIsEditingBio(true);
+                        }}
+                        isFullWidth={false}
+                        className="flex items-center gap-2"
+                    >
+                        <PencilIcon className="w-4 h-4" />
+                        Edit
+                    </CustomFormButton>
+                )}
+            </div>
+            
+            {isEditingBio && isCurrentUser ? (
+                <div className="space-y-4">
+                    <Textarea
+                        placeholder="Tell people about yourself, your art style, what you enjoy creating..."
+                        value={bioText}
+                        onChange={(e) => setBioText(e.target.value)}
+                        rows={6}
+                        className="dark:text-gray-200 dark:bg-gray-700/50 focus:border-purple-500"
+                        maxLength={500}
+                    />
+                    <div className="flex items-center justify-between">
+                        <Typography variant="small" className="text-gray-500 dark:text-gray-400">
+                            {bioText.length}/500 characters
+                        </Typography>
+                        <div className="flex gap-2">
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                    setIsEditingBio(false);
+                                    setBioText(user.bio || "");
+                                }}
+                                disabled={isSavingBio}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="gradient"
+                                color="primary"
+                                onClick={onSaveBio}
+                                disabled={isSavingBio || bioText === user.bio}
+                                className="flex items-center gap-2"
+                            >
+                                {isSavingBio ? <Spinner className="h-4 w-4" /> : null}
+                                Save Bio
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className="prose prose-purple dark:prose-invert max-w-none">
+                    {user.bio ? (
+                        <Typography className="text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed">
+                            {user.bio}
+                        </Typography>
+                    ) : (
+                        <div className="text-center py-8">
+                            <Typography className="text-gray-500 dark:text-gray-400 italic">
+                                {isCurrentUser 
+                                    ? "You haven't written a bio yet. Click 'Edit' to tell people about yourself!"
+                                    : `${user.name} hasn't written a bio yet.`
+                                }
+                            </Typography>
+                        </div>
+                    )}
+                </div>
+            )}
+        </CardBody>
+    </Card>
+);
+
+// Enhanced Commission Card Section Component
+const CommissionCardSection = ({
+    user,
+    isCurrentUser,
+    commissionCard,
+    loadingCard,
+    cardError,
+    onRefreshCard,
+    onDelete
+}: {
+    user: UserData;
+    isCurrentUser: boolean;
+    commissionCard: any;
+    loadingCard: boolean;
+    cardError: string | null;
+    onRefreshCard: () => void;
+    onDelete: () => void;
+}) => {
+    const renderCardContent = () => {
+        if (loadingCard) {
+            return <CommissionCardLoading />;
+        }
+        
+        if (cardError) {
+            return <CommissionCardError message={cardError} />;
+        }
+        
+        if (commissionCard) {
+            return (
+                <CommissionCard
+                    id={commissionCard.id}
+                    title={commissionCard.title}
+                    description={commissionCard.description}
+                    elements={commissionCard.elements || []}
+                    isOwner={isCurrentUser}
+                    onEdit={() => {/* Navigate to edit page */}}
+                    onDelete={onDelete}
+                />
+            );
+        }
+        
+        if (isCurrentUser) {
+            return (
+                <div className="commission-card-create-wrapper">
+                    <CreateCommissionCard
+                        artistName={user.name}
+                        onSuccess={() => {
+                            setTimeout(() => {
+                                onRefreshCard();
+                            }, 500);
+                        }}
+                    />
+                </div>
+            );
+        }
+        
+        return (
+            <div className="text-center py-8">
+                <Typography variant="h6" className="mb-3 text-gray-700 dark:text-gray-300">
+                    No Commission Card Available
+                </Typography>
+                <Typography className="text-gray-600 dark:text-gray-400">
+                    {`${user.name} hasn't created a commission card yet.`}
+                </Typography>
+            </div>
+        );
+    };
+
+    return (
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <CardBody className="p-6">
+                <Typography variant="h5" className="mb-4 font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                    <PaletteIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                    {`${user.name}'s Commission Card`}
+                </Typography>
+                {renderCardContent()}
+            </CardBody>
+        </Card>
+    );
+};
+
+// Main Component
 function UserProfile() {
     const { userId: userIdFromParams } = useParams<{ userId: string }>();
 
@@ -142,30 +547,237 @@ function UserProfile() {
         fetchData: refreshUserData,
     } = useFetchUserData();
 
-    // Profile picture upload related states
+    const displayUser = user as UserData;
+
+    const { commissionCard, loading: loadingCard, error: cardError, refreshCard } = useCommissionCard(
+        displayUser?.role === "artist" ? displayUser.name : undefined
+    );
+
+    // States
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState<string | null>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    // Manage Bluesky related states
     const [showManageSocials, setShowManageSocials] = useState(false);
-    const [showBlueskyVerification, setShowBlueskyVerification] = useState(false);
-
-    // Unlinking related states
     const [unlinkingPlatform, setUnlinkingPlatform] = useState<string | null>(null);
-    const [unlinkDialogOpen, setUnlinkDialogOpen] = useState(false);
     const [unlinkLoading, setUnlinkLoading] = useState(false);
     const [unlinkError, setUnlinkError] = useState<string | null>(null);
     const [showUnlinkDialog, setShowUnlinkDialog] = useState(false);
     const [unlinkingUsername, setUnlinkingUsername] = useState<string | null>(null);
+    const [availableTags, setAvailableTags] = useState<string[]>([]);
+    const [isUpdatingCommissionStatus, setIsUpdatingCommissionStatus] = useState(false);
+    const [tagManagementOpen, setTagManagementOpen] = useState(false);
+    const [bioText, setBioText] = useState("");
+    const [isEditingBio, setIsEditingBio] = useState(false);
+    const [isSavingBio, setIsSavingBio] = useState(false);
 
+    // Add new state for tracking OAuth return
+    const [shouldShowVerification, setShouldShowVerification] = useState(false);
+
+    // Local state to avoid full page refreshes
+    const [localUser, setLocalUser] = useState<UserData | null>(null);
+    const [localSocialProfiles, setLocalSocialProfiles] = useState<SocialProfile[]>([]);
+
+    // Effects
     useEffect(() => {
         if (userIdFromParams) {
             setProfileUserIdToFetch(userIdFromParams);
         } else {
-            setProfileUserIdToFetch(undefined); // Clear if no param
+            setProfileUserIdToFetch(undefined);
         }
     }, [userIdFromParams, setProfileUserIdToFetch]);
+
+    useEffect(() => {
+        async function fetchTags() {
+            try {
+                const response = await fetch('/api/tags/names');
+                if (response.ok) {
+                    const tagNames = await response.json();
+                    setAvailableTags(tagNames);
+                }
+            } catch (err) {
+                console.error('Failed to fetch tags:', err);
+            }
+        }
+        fetchTags();
+    }, []);
+
+    useEffect(() => {
+        if (displayUser?.bio) {
+            setBioText(displayUser.bio);
+        }
+    }, [displayUser?.bio]);
+
+    // Sync local state with fetched user data
+    useEffect(() => {
+        if (displayUser) {
+            setLocalUser(displayUser);
+            setLocalSocialProfiles(displayUser.socialProfiles || []);
+        }
+    }, [displayUser]);
+
+    // Use local user data if available, otherwise fall back to fetched data
+    const currentUser = localUser || displayUser;
+
+    // Add effect to check for OAuth return state
+    useEffect(() => {
+        // Check if we're returning from OAuth and should show verification
+        const shouldShowSocialManagement = sessionStorage.getItem('copla_show_social_management');
+        const shouldShowVerification = sessionStorage.getItem('copla_show_bluesky_verification');
+        
+        if (shouldShowSocialManagement && currentUser && isCurrentUser) {
+            setShowManageSocials(true);
+            setShouldShowVerification(!!shouldShowVerification);
+            
+            // Clean up session storage
+            sessionStorage.removeItem('copla_show_social_management');
+            sessionStorage.removeItem('copla_show_bluesky_verification');
+        }
+    }, [currentUser, isCurrentUser]);
+
+    // Handler functions
+    const handleSaveBio = async () => {
+        if (!user || !isCurrentUser) return;
+
+        setIsSavingBio(true);
+        try {
+            const response = await fetch(`/api/users/${user.name}/bio`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ bio: bioText })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to save bio');
+            }
+
+            // Update local state
+            setLocalUser(prev => prev ? { ...prev, bio: bioText } : null);
+            setIsEditingBio(false);
+        } catch (err) {
+            console.error('Error saving bio:', err);
+            // Refresh data on error
+            refreshUserData();
+        } finally {
+            setIsSavingBio(false);
+        }
+    };
+
+    const handleCommissionCardDelete = async () => {
+        if (!user || !isCurrentUser) return;
+        try {
+            const response = await fetch(`/api/users/${user.name}/commission-card`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete commission card');
+            }
+
+            // Refresh commission card data
+            await refreshCard();
+        } catch (err) {
+            console.error('Error deleting commission card:', err);
+        }
+    };
+
+    const handleSocialLinkSuccess = () => {
+        // Refresh user data when social link is successful
+        refreshUserData();
+        setShowManageSocials(false);
+        setShouldShowVerification(false);
+    };
+
+    // Handlers
+    const handleCommissionToggle = async (checked: boolean) => {
+        if (!user || !isCurrentUser) return;
+
+        // Optimistically update local state
+        setLocalUser(prev => prev ? { ...prev, isOpenForCommissions: checked } : null);
+        setIsUpdatingCommissionStatus(true);
+
+        try {
+            const response = await fetch(`/api/users/${user.name}/commission-status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ isOpen: checked })
+            });
+
+            if (!response.ok) {
+                // Revert optimistic update on error
+                setLocalUser(prev => prev ? { ...prev, isOpenForCommissions: !checked } : null);
+                throw new Error('Failed to update commission status');
+            }
+        } catch (err) {
+            console.error('Error updating commission status:', err);
+            // Refresh data only on error to get the correct state
+            refreshUserData();
+        } finally {
+            setIsUpdatingCommissionStatus(false);
+        }
+    };
+
+    const handleAddTag = async (tagName: string) => {
+        if (!user || !isCurrentUser) return;
+
+        // Optimistically update local state
+        setLocalUser(prev => prev ? {
+            ...prev,
+            relatedTags: [...(prev.relatedTags || []), tagName]
+        } : null);
+
+        try {
+            const response = await fetch(`/api/users/${user.name}/tags/add`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ tagName })
+            });
+
+            if (!response.ok) {
+                // Revert optimistic update on error
+                setLocalUser(prev => prev ? {
+                    ...prev,
+                    relatedTags: (prev.relatedTags || []).filter(tag => tag !== tagName)
+                } : null);
+                throw new Error('Failed to add tag');
+            }
+        } catch (err) {
+            console.error('Error adding tag:', err);
+            refreshUserData();
+        }
+    };
+
+    const handleRemoveTag = async (tagName: string) => {
+        if (!user || !isCurrentUser) return;
+
+        // Optimistically update local state
+        const previousTags = localUser?.relatedTags || [];
+        setLocalUser(prev => prev ? {
+            ...prev,
+            relatedTags: (prev.relatedTags || []).filter(tag => tag !== tagName)
+        } : null);
+
+        try {
+            const response = await fetch(`/api/users/${user.name}/tags/${encodeURIComponent(tagName)}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                // Revert optimistic update on error
+                setLocalUser(prev => prev ? {
+                    ...prev,
+                    relatedTags: previousTags
+                } : null);
+                throw new Error('Failed to remove tag');
+            }
+        } catch (err) {
+            console.error('Error removing tag:', err);
+            refreshUserData();
+        }
+    };
 
     const handleProfilePicUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         if (!event.target.files || event.target.files.length === 0) return;
@@ -180,16 +792,15 @@ function UserProfile() {
             const response = await fetch('/api/images/upload/profilepic', {
                 method: 'POST',
                 body: formData,
-                // credentials: 'include', // Quarkus security might require this
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ message: 'Upload failed with status: ' + response.statusText }));
+                const errorData = await response.json().catch(() => ({ message: 'Upload failed' }));
                 throw new Error(errorData.message || 'Failed to upload profile picture.');
             }
-            // const updatedUser = await response.json(); // Backend returns updated user or just URL
-            refreshUserData(); // Refresh data to get new profilePicPath from the hook
-            if (fileInputRef.current) fileInputRef.current.value = "";
+            
+            // Only refresh user data for profile picture changes
+            refreshUserData();
         } catch (err: any) {
             setUploadError(err.message);
         } finally {
@@ -198,397 +809,362 @@ function UserProfile() {
     };
 
     const handleUnlinkSocial = async (platformToUnlink: string, usernameToUnlink: string) => {
-    if (platformToUnlink.toLowerCase() !== 'bluesky' || !user) return;
-    setUnlinkingPlatform(platformToUnlink);
-    setUnlinkingUsername(usernameToUnlink); // Add this state variable
-    setShowUnlinkDialog(true);
-    setUnlinkDialogOpen(true);
-};
-
-   const confirmUnlinkSocial = async () => {
-    if (!unlinkingPlatform || !unlinkingUsername || !user) return;
-
-    try {
-        setUnlinkLoading(true);
+        setUnlinkingPlatform(platformToUnlink);
+        setUnlinkingUsername(usernameToUnlink);
+        setShowUnlinkDialog(true);
         setUnlinkError(null);
+    };
 
-        const response = await fetch(`/api/users/${user.name}/social/${unlinkingPlatform.toLowerCase()}/${encodeURIComponent(unlinkingUsername)}`, {
-            method: 'DELETE',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json'
+    const confirmUnlinkSocial = async () => {
+        if (!unlinkingPlatform || !unlinkingUsername || !user) return;
+
+        // Optimistically update local social profiles
+        const profileToRemove = localSocialProfiles.find(
+            p => p.platform === unlinkingPlatform && p.username === unlinkingUsername
+        );
+        setLocalSocialProfiles(prev => 
+            prev.filter(p => !(p.platform === unlinkingPlatform && p.username === unlinkingUsername))
+        );
+        setLocalUser(prev => prev ? {
+            ...prev,
+            socialProfiles: localSocialProfiles.filter(
+                p => !(p.platform === unlinkingPlatform && p.username === unlinkingUsername)
+            )
+        } : null);
+
+        try {
+            setUnlinkLoading(true);
+            setUnlinkError(null);
+
+            const response = await fetch(
+                `/api/users/${user.name}/social/${unlinkingPlatform.toLowerCase()}/${encodeURIComponent(unlinkingUsername)}`,
+                {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' }
+                }
+            );
+
+            if (!response.ok) {
+                // Revert optimistic update on error
+                if (profileToRemove) {
+                    setLocalSocialProfiles(prev => [...prev, profileToRemove]);
+                    setLocalUser(prev => prev ? {
+                        ...prev,
+                        socialProfiles: [...(prev.socialProfiles || []), profileToRemove]
+                    } : null);
+                }
+                const errorData = await response.json().catch(() => ({ message: `Failed to unlink ${unlinkingPlatform} account` }));
+                throw new Error(errorData.message);
             }
-        });
 
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: `Failed to unlink ${unlinkingPlatform} account` }));
-            throw new Error(errorData.message || `Failed to unlink ${unlinkingPlatform} account`);
+            setShowUnlinkDialog(false);
+            setUnlinkingPlatform(null);
+            setUnlinkingUsername(null);
+        } catch (err: any) {
+            setUnlinkError(err.message || `An error occurred while unlinking your ${unlinkingPlatform} account`);
+            refreshUserData();
+        } finally {
+            setUnlinkLoading(false);
         }
+    };
 
-        setUnlinkDialogOpen(false);
-        refreshUserData();
-
-    } catch (err: any) {
-        setUnlinkError(err.message || `An error occurred while unlinking your ${unlinkingPlatform} account`);
-    } finally {
-        setUnlinkLoading(false);
+    const cancelUnlink = () => {
         setShowUnlinkDialog(false);
+        setUnlinkingPlatform(null);
+        setUnlinkingUsername(null);
+        setUnlinkError(null);
+    };
+
+    // Loading and error states
+    if (loading && !user) {
+        return (
+            <PageLayout pageTitle="User Profile" contentMaxWidth="max-w-2xl">
+                <LoadingSpinner message={`Loading ${userIdFromParams || 'user'}'s profile...`} />
+            </PageLayout>
+        );
     }
-};
 
-
-
-    if (loading && !user) { // Initial loading state for the profile
-        return <PageLayout isLoading={true} loadingText={`Loading ${userIdFromParams || 'user'}'s profile...`} contentMaxWidth="max-w-2xl" children={undefined} />;
-    }
-
-    if (error && !user) { // If fetching failed and we have no user data
+    if (error && !user) {
         return (
             <PageLayout pageTitle="Profile Error" contentMaxWidth="max-w-2xl">
-                <Alert color="error" className="flex items-center"> {/* Material Tailwind uses "red" for Alert color */}
-                    <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
-                    {error || "User data could not be loaded."}
-                </Alert>
+                <ErrorAlert title="Profile Error" message={error || "User data could not be loaded."} />
             </PageLayout>
         );
     }
 
-    if (!user) { // If no user ID was provided or user not found but no error (e.g. hook cleared it)
+    if (!user) {
         return (
             <PageLayout pageTitle="User Not Found" contentMaxWidth="max-w-2xl">
-                <Alert color="info" className="flex items-center"> {/* Material Tailwind uses "amber" for warning */}
-                    <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
-                    The user profile could not be found.
-                </Alert>
+                <ErrorAlert 
+                    title="User Not Found" 
+                    message="The user profile could not be found."
+                />
             </PageLayout>
         );
     }
 
-    // Cast user from hook (User type) to UserData if necessary, or ensure types are aligned
-    const displayUser = user as UserData;
-
+    const pageTitle = `${currentUser.role === 'artist' ? 'Artist' : 'Client'} - ${currentUser.name}'s Den`;
 
     return (
-    <PageLayout 
-        pageTitle={
-            <div className="flex items-center gap-4">
-                <span className={`inline-flex items-center px-4 py-2 rounded-full text-base font-medium shadow-sm ${
-                    displayUser.role === 'artist' 
-                        ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 border-2 border-purple-300 dark:border-purple-700' 
-                        : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 border-2 border-blue-300 dark:border-blue-700'
-                }`}>
-                    {displayUser.role === 'artist' ?
-                        <>
-                            <PaletteIcon className="w-5 h-5 mr-2" />
-                            Artist
-                        </> :
-                        <>
-                            <UserIcon className="w-5 h-5 mr-2" />
-                            Client
-                        </>
-                    }
-                </span>
-                <span>{displayUser.name}'s Den</span>
-            </div>
-        } 
-        contentMaxWidth="max-w-2xl"
-    >
-            <Card className="w-full shadow-xl overflow-hidden">
-                <CardHeader
-                    floated={false}
-                    shadow={false}
-                    className="m-0 w-full rounded-none bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-700 dark:to-indigo-700 p-6"
-                >
-                    <div className="flex flex-col sm:flex-row items-center gap-6">
-                        <div className="relative group">
-                            <Avatar
-                                size="xxl"
-                                // shape="circular" // Avatar is circular by default
-                                src={displayUser.profilePicPath || `https://avatar.iran.liara.run/public/boy?username=${displayUser.name}`}
-                                alt={`${displayUser.name}'s profile picture`}
-                                className="border-4 border-white dark:border-gray-800 shadow-lg"
-                            />
-                            {isCurrentUser && (
-                                <label
-                                    htmlFor="profilePicInput"
-                                    className="absolute bottom-1 right-1 bg-white dark:bg-gray-700 p-2 rounded-full cursor-pointer shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors group-hover:opacity-100 opacity-75"
-                                >
-                                    <PencilIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                                    <input
-                                        id="profilePicInput"
-                                        ref={fileInputRef}
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleProfilePicUpload}
-                                        className="sr-only"
-                                        disabled={uploading}
-                                    />
-                                </label>
-                            )}
-                        </div>
-                        <div className="text-center sm:text-left">
-                            <Typography variant="h3" className="font-bold text-white dark:text-gray-200">
-                                {displayUser.name}
-                            </Typography>
-                            <Typography className="font-normal text-gray-200 dark:text-gray-300">
-                                {displayUser.email}
-                            </Typography>
-                            <Typography className="font-normal text-sm text-gray-300 dark:text-gray-400 mt-1">
-                                Joined on: {new Date(displayUser.timeCreated).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                })}
-                            </Typography>
-                        </div>
-                    </div>
-                    {isCurrentUser && uploading && (
-                        <div className="mt-4 flex items-center justify-center text-white">
-                            <Spinner className="h-4 w-4 mr-2" />
-                            Uploading picture...
-                        </div>
-                    )}
-                    {isCurrentUser && uploadError && (
-                        <Alert color="error" className="mt-4 flex items-center">
-                            <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
-                            {uploadError || "Upload failed!"}
-                        </Alert>
-                    )}
-                </CardHeader>
-
-                <CardBody className="p-6 space-y-8">
-                    <div>
-                        <Typography variant="h5" className="mb-3 font-semibold text-gray-900 dark:text-gray-100"> {/* Adjusted color */}
-                            About Me
-                        </Typography>
-                        {isCurrentUser ? (
-                            <Textarea
-                                placeholder="Your Bio"
-                                defaultValue={displayUser.bio || ""}
-                                rows={4}
-                                className="dark:text-gray-200 dark:bg-gray-700/50 focus:border-purple-500"
-                            // onBlur={(e) => handleBioSave(e.target.value)} // Example: save on blur
-                            />
-                        ) : (
-                            <Typography className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
-                                {displayUser.bio || <span className="italic text-gray-500 dark:text-gray-400">No bio provided yet.</span>}
-                            </Typography>
-                        )}
-                        {isCurrentUser && <CustomFormButton isFullWidth={false}
-                            className="mt-4">Save Bio</CustomFormButton>}
-                    </div>
-
-                    <div>
-                        <Typography variant="h5" className="mb-3 font-semibold text-gray-900 dark:text-gray-100">
-                            Connect
-                        </Typography>
-                        {displayUser.socialProfiles && displayUser.socialProfiles.length > 0 ? (
-    <ul className="space-y-3">
-        {/* Group by platform */}
-        {Object.entries(
-            displayUser.socialProfiles.reduce((acc, profile) => {
-                if (!acc[profile.platform]) {
-                    acc[profile.platform] = [];
-                }
-                acc[profile.platform].push(profile);
-                return acc;
-            }, {} as Record<string, SocialProfile[]>)
-        ).map(([platform, profiles]) => (
-            <li key={platform} className="mb-6">
-                <Typography className="font-medium text-gray-700 dark:text-gray-300 capitalize mb-2">
-                    {platform} Accounts ({profiles.length})
-                </Typography>
-                <div className="space-y-2">
-                    {profiles.map((profile) => (
-                        <div 
-                            key={profile.username}
-                            className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/60 rounded-lg shadow-sm hover:shadow-md transition-shadow"
-                        >
-                            <div className="flex items-center space-x-3">
-                                {getPlatformIcon(profile.platform, "w-6 h-6 text-purple-600 dark:text-purple-400 flex-shrink-0")}
-                                <div>
-                                    <Typography className="text-sm text-gray-600 dark:text-gray-400">
-                                        @{profile.username}
-                                    </Typography>
-                                    <a
-                                        href={profile.profileUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-sm text-purple-600 dark:text-purple-400 hover:underline"
-                                        title={`Visit ${profile.username}'s ${profile.platform} profile`}
-                                    >
-                                        View Profile
-                                    </a>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <SocialVerificationBadge
-                                    isVerified={profile.isVerified}
-                                    isCurrentUser={isCurrentUser}
-                                    onVerify={() => {
-                                        if (profile.platform.toLowerCase() === 'bluesky' && !profile.isVerified) {
-                                            setShowBlueskyVerification(true);
-                                        }
-                                    }}
-                                />
-                                {isCurrentUser && profile.platform.toLowerCase() === 'bluesky' && (
-                                    <Button
-                                        size="sm"
-                                        color="error"
-                                        onClick={() => handleUnlinkSocial(profile.platform, profile.username)}
-                                        className="py-1 px-2 text-xs"
-                                    >
-                                        Unlink
-                                    </Button>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </li>
-        ))}
-    </ul>
-) : (
-    <Typography className="text-gray-600 dark:text-gray-400 italic">
-        {isCurrentUser ? "You haven't linked any social accounts yet." : `${displayUser.name} hasn't linked any social accounts yet.`}
-    </Typography>
-)}
-                        {/* Unlink Confirmation Dialog */}
-                        {showUnlinkDialog && displayUser && (
-                            <Dialog open={unlinkDialogOpen} handler={() => setUnlinkDialogOpen(false)} size="sm">
-                                <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl mt-4">
-                                    <Typography variant="h5" className="flex items-center text-white">
-                                        <ExclamationTriangleIcon className="h-6 w-6 mr-2" />
-                                        Confirm Unlink
-                                    </Typography>
-                                </div>
-                                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                                    <Typography className="text-gray-700 dark:text-gray-300 mb-3">
-                                        Are you sure you want to unlink your <span className="font-semibold text-purple-600 dark:text-purple-400 capitalize">{unlinkingPlatform}</span> account?
-                                    </Typography>
-                                    <Typography className="text-sm text-gray-600 dark:text-gray-400">
-                                        This action cannot be undone. You will need to re-link and verify your account later if you wish to reconnect it.
-                                    </Typography>
-                                    {unlinkError && (
-                                        <Alert color="error" variant="gradient" className="mt-4 border border-red-300 shadow-sm">
-                                            <div className="flex items-center">
-                                                <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
-                                                {unlinkError}
-                                            </div>
-                                        </Alert>
-                                    )}
-                                </div>
-                                <div className="flex justify-end gap-3 p-6">
-                                    <CustomFormButton
-                                        isFullWidth={false}
-                                        className="bg-gray-500 hover:bg-gray-600 dark:bg-gray-500 dark:hover:bg-gray-600 dark:text-white"
-                                        onClick={() => {
-                                            setUnlinkDialogOpen(false);
-                                            setUnlinkError(null);
-                                            setShowUnlinkDialog(false);
-                                        }}
-                                    >
-                                        Cancel
-                                    </CustomFormButton>
-                                    <CustomFormButton
-                                        isFullWidth={false}
-                                        className="bg-red-500 hover:bg-red-600 dark:bg-red-500 dark:hover:bg-red-600 dark:text-white"
-                                        onClick={confirmUnlinkSocial}
-                                        disabled={unlinkLoading}
-                                    >
-                                        {unlinkLoading ? (
-                                            <div className="flex items-center justify-center">
-                                                <Spinner className="h-4 w-4 mr-2" />
-                                                Unlinking...
-                                            </div>
-                                        ) : (
-                                            "Unlink"
-                                        )}
-                                    </CustomFormButton>
-                                </div>
-                            </Dialog>
-                        )}
-                        {isCurrentUser && (
-                            <CustomFormButton
-                                isFullWidth={false}
-                                onClick={() => {
-                                    if (showManageSocials === true) {
-                                        setShowManageSocials(false); // Close if already open
-                                    } else {
-                                        setShowManageSocials(true);
-                                    }
-                                }}
-                                className="mt-4"
-                            >
-                                Manage Socials
-                            </CustomFormButton>
-                        )}
-
-                        {showManageSocials && displayUser && (
-                            <Dialog
-                                open={showManageSocials}
-                                handler={() => setShowManageSocials(false)}
-                                size="md" // ManageBluesky is max-w-md
-                            >
-                                <ManageBluesky
-                                    username={displayUser.name}
-                                    onClose={() => setShowManageSocials(false)}
-                                    onSuccess={() => {
-                                        refreshUserData();
-                                        // ManageBluesky will call its own onClose after a timeout
-                                    }}
-                                />
-                            </Dialog>
-                        )}
-                        {showBlueskyVerification && displayUser && (
-                            <Dialog
-                                open={showBlueskyVerification}
-                                handler={() => setShowBlueskyVerification(false)}
-                                size="md"
-                            >
-                                <BlueskyVerif
-                                    appUsername={displayUser.name}
-                                    onClose={() => setShowBlueskyVerification(false)}
-                                    onSuccess={(message) => {
-                                        alert(message); // Or use a more sophisticated notification
-                                        setShowBlueskyVerification(false);
-                                        refreshUserData();
-                                    }}
-                                />
-                            </Dialog>
-                        )}
-
-                    </div>
-
-
-                    <div>
-                        <Typography variant="h5" className="mb-3 font-semibold text-gray-900 dark:text-gray-100">
-                            {displayUser.role === 'artist' ? 'My Portfolio' : 'My Commissions'}
-                        </Typography>
-
-                        <div className="p-6 bg-gray-50 dark:bg-gray-800/60 rounded-lg text-center">
-                            <PhotoIcon className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
-                            <Typography className="text-gray-600 dark:text-gray-400">
-                                {isCurrentUser ?
-                                    (displayUser.role === 'artist'
-                                        ? "You haven't added any artwork to your portfolio yet."
-                                        : "You haven't posted any commission requests yet.") :
-                                    (displayUser.role === 'artist'
-                                        ? `${displayUser.name} hasn't added any artwork to their portfolio yet.`
-                                        : `${displayUser.name} hasn't posted any commission requests yet.`)}
-                            </Typography>
-                            {isCurrentUser &&
-                                <CustomFormButton
-                                    isFullWidth={false}
-                                    variant="solid"
-                                    className="mt-4">
-                                    {displayUser.role === 'artist' ? 'Add Artwork to Portfolio' : 'Create New Commission'}
-                                </CustomFormButton>
-                            }
-                        </div>
-                    </div>
-                </CardBody>
+        <PageLayout pageTitle={pageTitle} contentMaxWidth="max-w-4xl">
+            {/* Main Profile Card */}
+            <Card className="w-full shadow-2xl overflow-hidden mb-8">
+                <ProfileHeader
+                    user={currentUser}
+                    isCurrentUser={isCurrentUser}
+                    uploading={uploading}
+                    uploadError={uploadError}
+                    onProfilePicUpload={handleProfilePicUpload}
+                />
             </Card>
+
+            {/* Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left Column - Main Content */}
+                <div className="lg:col-span-2 space-y-8">
+                    {/* Bio Section */}
+                    <BioSection
+                        user={currentUser}
+                        isCurrentUser={isCurrentUser}
+                        bioText={bioText}
+                        setBioText={setBioText}
+                        isEditingBio={isEditingBio}
+                        setIsEditingBio={setIsEditingBio}
+                        isSavingBio={isSavingBio}
+                        onSaveBio={handleSaveBio}
+                    />
+
+                    {/* Artist-specific sections */}
+                    {currentUser.role === "artist" && (
+                        <CommissionCardSection
+                            user={currentUser}
+                            isCurrentUser={isCurrentUser}
+                            commissionCard={commissionCard}
+                            loadingCard={loadingCard}
+                            cardError={cardError}
+                            onRefreshCard={refreshCard}
+                            onDelete={handleCommissionCardDelete}
+                        />
+                    )}
+
+                    {/* Portfolio Section */}
+                    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                        <CardBody className="p-6">
+                            <Typography variant="h5" className="mb-4 font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                                <PhotoIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                                {currentUser.role === 'artist' ? 'Portfolio' : 'Commission History'}
+                            </Typography>
+
+                            <EmptyState
+                                title={isCurrentUser
+                                    ? (currentUser.role === 'artist'
+                                        ? "Your portfolio is empty"
+                                        : "No commission history yet")
+                                    : (currentUser.role === 'artist'
+                                        ? `${currentUser.name}'s portfolio is empty`
+                                        : `${currentUser.name} has no commission history yet`)}
+                                description={isCurrentUser
+                                    ? (currentUser.role === 'artist'
+                                        ? "Showcase your amazing artwork to potential clients"
+                                        : "Your commissioned artwork will appear here")
+                                    : (currentUser.role === 'artist'
+                                        ? "Check back later to see their latest work"
+                                        : "Their commission history will appear here")}
+                                actionLabel={isCurrentUser ? (currentUser.role === 'artist' ? 'Add Artwork' : 'Create Commission Request') : undefined}
+                                onAction={isCurrentUser ? () => {} : undefined}
+                            />
+                        </CardBody>
+                    </Card>
+                </div>
+
+                {/* Right Column - Sidebar */}
+                <div className="lg:col-span-1 space-y-6">
+                    {/* Info Card */}
+                    <InfoCard 
+                        user={currentUser} 
+                        isCurrentUser={isCurrentUser}
+                        isUpdating={isUpdatingCommissionStatus}
+                        onToggle={handleCommissionToggle}
+                    />
+
+                    {/* Tags Section - Only for artists */}
+                    {currentUser.role === "artist" && (
+                        <CompactTagsSection
+                            user={currentUser}
+                            isCurrentUser={isCurrentUser}
+                            availableTags={availableTags}
+                            tagManagementOpen={tagManagementOpen}
+                            onToggleManagement={() => setTagManagementOpen(!tagManagementOpen)}
+                            onAddTag={handleAddTag}
+                            onRemoveTag={handleRemoveTag}
+                        />
+                    )}
+
+                    {/* Social Profiles */}
+                    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                        <CardBody className="p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <Typography variant="h6" className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                    </svg>
+                                    Connect
+                                </Typography>
+                                <ManageButton isCurrentUser={isCurrentUser} onClick={() => setShowManageSocials(!showManageSocials)} />
+                            </div>
+                            
+                            {showManageSocials && isCurrentUser ? (
+                                <ManageBluesky
+                                    username={currentUser.name}
+                                    onClose={() => {
+                                        setShowManageSocials(false);
+                                        setShouldShowVerification(false);
+                                    }}
+                                    onSuccess={handleSocialLinkSuccess}
+                                    autoShowVerification={shouldShowVerification}
+                                />
+                            ) : (
+                                <>
+                                    {localSocialProfiles && localSocialProfiles.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {Object.entries(
+                                                localSocialProfiles.reduce((acc, profile) => {
+                                                    if (!acc[profile.platform]) {
+                                                        acc[profile.platform] = [];
+                                                    }
+                                                    acc[profile.platform].push(profile);
+                                                    return acc;
+                                                }, {} as Record<string, SocialProfile[]>)
+                                            ).map(([platform, profiles]) => (
+                                                <div key={platform} className="space-y-2">
+                                                    <Typography variant="small" className="font-medium text-gray-700 dark:text-gray-300 capitalize">
+                                                        {platform} ({profiles.length})
+                                                    </Typography>
+                                                    {profiles.map((profile) => (
+                                                        <div key={profile.username} className="space-y-2">
+                                                            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/60 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                                                                <div className="flex items-center space-x-3 flex-1 min-w-0">
+                                                                    {getPlatformIcon(profile.platform, "w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0")}
+                                                                    <div className="min-w-0 flex-1">
+                                                                        <Typography variant="small" className="text-gray-600 dark:text-gray-400 truncate">
+                                                                            @{profile.username}
+                                                                        </Typography>
+                                                                        <a
+                                                                            href={profile.profileUrl}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="text-xs text-purple-600 dark:text-purple-400 hover:underline"
+                                                                            title={`Visit ${profile.username}'s ${profile.platform} profile`}
+                                                                        >
+                                                                            View Profile
+                                                                        </a>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-center gap-1 flex-shrink-0">
+                                                                    {profile.isVerified ? (
+                                                                        <div title="Verified Account">
+                                                                            <VerifiedIcon className="w-4 h-4 text-green-500" />
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div 
+                                                                            title="Unverified Account - This account has not been verified and may not belong to the real person"
+                                                                            className="cursor-help"
+                                                                        >
+                                                                            <ExclamationTriangleIcon className="w-4 h-4 text-red-500 hover:text-red-600" />
+                                                                        </div>
+                                                                    )}
+                                                                    {isCurrentUser && (
+                                                                        <Button
+                                                                            size="sm"
+                                                                            color="error"
+                                                                            onClick={() => handleUnlinkSocial(profile.platform, profile.username)}
+                                                                            className="p-1 min-w-0"
+                                                                        >
+                                                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                            </svg>
+                                                                        </Button>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            {/* Inline Unlink Dialog */}
+                                                            {showUnlinkDialog && unlinkingPlatform === profile.platform && unlinkingUsername === profile.username && (
+                                                                <div className="ml-8 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                                                    <div className="flex items-start gap-3">
+                                                                        <ExclamationTriangleIcon className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <Typography variant="small" className="font-medium text-red-800 dark:text-red-200 mb-1">
+                                                                                Confirm Unlink
+                                                                            </Typography>
+                                                                            <Typography variant="small" className="text-red-700 dark:text-red-300 mb-3">
+                                                                                Are you sure you want to unlink @{profile.username} from {profile.platform}? This action cannot be undone.
+                                                                            </Typography>
+                                                                            
+                                                                            {unlinkError && (
+                                                                                <Alert color="error" className="mb-3 p-2">
+                                                                                    <Typography variant="small" className="text-red-800">
+                                                                                        {unlinkError}
+                                                                                    </Typography>
+                                                                                </Alert>
+                                                                            )}
+                                                                            
+                                                                            <div className="flex gap-2">
+                                                                                <Button
+                                                                                    size="sm"
+                                                                                    variant="outline"
+                                                                                    onClick={cancelUnlink}
+                                                                                    disabled={unlinkLoading}
+                                                                                    className="flex-1"
+                                                                                >
+                                                                                    Cancel
+                                                                                </Button>
+                                                                                <Button
+                                                                                    size="sm"
+                                                                                    color="error"
+                                                                                    onClick={confirmUnlinkSocial}
+                                                                                    disabled={unlinkLoading}
+                                                                                    className="flex-1 flex items-center justify-center gap-1"
+                                                                                >
+                                                                                    {unlinkLoading ? (
+                                                                                        <>
+                                                                                            <Spinner className="h-3 w-3" />
+                                                                                            <span>Unlinking...</span>
+                                                                                        </>
+                                                                                    ) : (
+                                                                                        "Unlink"
+                                                                                    )}
+                                                                                </Button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-6">
+                                            <svg className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                            </svg>
+                                            <Typography variant="small" className="text-gray-500 dark:text-gray-400 italic">
+                                                {isCurrentUser 
+                                                    ? "No social accounts linked yet" 
+                                                    : `${currentUser.name} hasn't linked any social accounts`
+                                                }
+                                            </Typography>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </CardBody>
+                    </Card>
+                </div>
+            </div>
         </PageLayout>
     );
 }

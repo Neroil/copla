@@ -12,7 +12,6 @@ public class SocialProfileDto {
     public SocialProfileDto() {
     }
 
-
     public SocialProfileDto(SocialProfile socialProfile) {
         this.id = socialProfile.id;
         this.platform = socialProfile.platform;

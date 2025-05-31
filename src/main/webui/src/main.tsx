@@ -8,6 +8,7 @@ import Register from "./pages/Register.tsx";
 import UserProfile from "./pages/UserProfile.tsx";
 import UserList from "./pages/UserList.tsx";
 import BlueskyCallback from "./pages/BlueskyCallback.tsx";
+import ArtistDirectory from "./pages/ArtistDirectory.tsx";
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
@@ -19,6 +20,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                     <Route path="users/:userId" element={<UserProfile/>}/>
                     <Route path="users" element={<UserList/>}/>
                     <Route path="callback" element={<BlueskyCallback />}/>
+                    <Route path="commissions" element={<ArtistDirectory />}/>
                 </Routes>
             </BrowserRouter>
     </React.StrictMode>,

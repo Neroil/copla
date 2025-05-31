@@ -2,7 +2,7 @@ package art.resources;
 
 import art.dtos.UserRegistrationDto;
 import art.entities.User;
-import jakarta.enterprise.context.ApplicationScoped; // Use ApplicationScoped for injection/transaction management
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
@@ -51,7 +51,6 @@ public class RegisterResource {
                 User.add(registrationData.name, registrationData.password, registrationData.email);
             }
         } catch (Exception e) {
-            // Log the exception e
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(Map.of("message", "Failed to register user due to a server error."))
                     .build();

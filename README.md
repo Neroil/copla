@@ -1,8 +1,6 @@
 # copla
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
-
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+This project's demo page can be available here : http://copla.zapto.org/
 
 ## Running the application in dev mode
 
@@ -52,6 +50,115 @@ Or, if you don't have GraalVM installed, you can run the native executable build
 You can then execute your native executable with: `./build/copla-1.0.0-SNAPSHOT-runner`
 
 If you want to learn more about building native executables, please consult <https://quarkus.io/guides/gradle-tooling>.
+
+## Setup on VM with Docker
+
+### Prerequisites
+
+Ensure Docker is installed on your VM:
+
+```shell script
+sudo apt update
+sudo apt install docker.io docker-compose-plugin
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -aG docker $USER
+```
+
+Log out and back in for the docker group to take effect.
+
+### Running with Docker Compose
+
+1. Install Docker Compose plugin if not already installed:
+
+```shell script
+sudo apt install docker-compose-plugin
+```
+
+2. Create the Docker Compose file:
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-copla
+    environment:
+      POSTGRES_DB: copla
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - copla-network
+
+  quarkus-app:
+    image: neroil/quarkus-copla:latest
+    container_name: quarkus-app
+    environment:
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://postgres:5432/copla
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - copla-network
+
+networks:
+  copla-network:
+    driver: bridge
+```
+
+3. Start the application:
+
+```shell script
+docker compose up -d
+```
+
+4. Access the application at `http://localhost:8080`
+
+### Auto-start on VM reboot
+
+To automatically start the application when the VM reboots:
+
+1. Create a systemd service:
+
+```shell script
+sudo nano /etc/systemd/system/copla-app.service
+```
+
+2. Add this content:
+
+```ini
+[Unit]
+Description=Copla Docker Compose Application
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=/usr/bin/docker compose -f /path/to/your/docker-compose.yml pull
+ExecStart=/usr/bin/docker compose -f /path/to/your/docker-compose.yml up -d
+ExecStop=/usr/bin/docker compose -f /path/to/your/docker-compose.yml down
+WorkingDirectory=/path/to/your/compose/file
+User=root
+
+[Install]
+WantedBy=multi-user.target
+```
+
+3. Enable the service:
+
+```shell script
+sudo systemctl daemon-reload
+sudo systemctl enable copla-app.service
+sudo systemctl start copla-app.service
+```
 
 ## Related Guides
 
