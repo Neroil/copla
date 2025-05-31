@@ -4,9 +4,9 @@ name: CI build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, google_vm_cicd ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, google_vm_cicd]
 
 jobs:
   build:
