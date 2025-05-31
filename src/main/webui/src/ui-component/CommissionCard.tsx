@@ -9,8 +9,6 @@ import {
   Spinner,
   Input,
   Textarea,
-  Button,
-  IconButton
 } from "@material-tailwind/react";
 import { PaletteIcon } from "./CustomIcons";
 import CustomFormButton from "./CustomFormButton";
@@ -179,7 +177,7 @@ const ServiceElement: React.FC<{
   onUpdate: (elementId: number, updates: Partial<CommissionCardElement>) => void;
   onDelete: (elementId: number) => void;
   artistName: string;
-}> = ({ element, index, isOpen, isOwner, onToggle, onUpdate, onDelete, artistName }) => {
+}> = ({ element, index, isOpen, isOwner, onToggle, onUpdate, onDelete }) => {
   const { isLoggedIn } = useAuthStatus();
   const [isEditing, setIsEditing] = useState(false);
   const [editPrice, setEditPrice] = useState(element.price?.toString() || '');
