@@ -93,16 +93,57 @@ public class ImageResource {
     @Path("/upload/userpic")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response uploadUserPicture(FileUpload file) {
+    public Response uploadUserPicture(@RestForm("file") FileUpload file) {
         //Don't allow anyone to upload files
         if (identity.isAnonymous()) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
         System.out.println(file.fileName());
-        String fileName = identity.getPrincipal().getName() + "_" + UUID.randomUUID();
+        String fileName = identity.getPrincipal().getName() + "_" + UUID.randomUUID() + "_" + file.fileName();
 
         return uploadImage(file, fileName);
+    }
+
+    @DELETE
+    @Path("/delete/{fileName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteImage(@PathParam("fileName") String fileName) {
+        if (identity.isAnonymous()) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        try {
+            // Extract the actual filename from the URL path if it contains /api/images/view/
+            String actualFileName = fileName;
+            if (fileName.startsWith("/api/images/view/")) {
+                actualFileName = fileName.substring("/api/images/view/".length());
+            }
+
+            java.nio.file.Path imagePath = Paths.get(uploadDir + actualFileName);
+            if (!Files.exists(imagePath)) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity("{\"error\":\"Image not found\"}")
+                        .build();
+            }
+
+            // Check if the current user owns this image (basic security check)
+            String currentUser = identity.getPrincipal().getName();
+            if (!actualFileName.startsWith(currentUser + "_")) {
+                return Response.status(Response.Status.FORBIDDEN)
+                        .entity("{\"error\":\"You can only delete your own images\"}")
+                        .build();
+            }
+
+            Files.delete(imagePath);
+            return Response.ok()
+                    .entity("{\"message\":\"Image deleted successfully\"}")
+                    .build();
+        } catch (IOException e) {
+            return Response.serverError()
+                    .entity("{\"error\":\"Failed to delete image: " + e.getMessage() + "\"}")
+                    .build();
+        }
     }
 
     @GET

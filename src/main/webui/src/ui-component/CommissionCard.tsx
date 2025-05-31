@@ -18,6 +18,7 @@ import { LoadingSpinner } from "./LoadingSpinner";
 import { ErrorAlert } from "./ErrorAlert";
 import { EmptyState } from "./EmptyState";
 import { useAuthStatus } from "../resources/AuthStatus";
+import ImageModal from "./ImageModal";
 
 // Interfaces matching your Java entities
 interface CommissionCardElement {
@@ -186,6 +187,7 @@ const ServiceElement: React.FC<{
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null);
 
   const handlePriceUpdate = async () => {
     if (updating || !isLoggedIn) return;
@@ -242,144 +244,188 @@ const ServiceElement: React.FC<{
       });
 
       if (!response.ok) {
-        throw new Error('Failed to upload image');
+        const errorText = await response.text();
+        throw new Error(`Failed to upload image: ${errorText}`);
       }
 
       const result = await response.json();
       const newImageUrls = [...(element.exampleImageUrls || []), result.url];
       await onUpdate(element.id, { exampleImageUrls: newImageUrls });
+      
+      // Clear the input so the same file can be uploaded again if needed
+      event.target.value = '';
     } catch (error: any) {
+      console.error('Image upload error:', error);
       setUploadError(error.message || 'Failed to upload image');
     } finally {
       setUploading(false);
     }
   };
 
-  const handleImageDelete = async (imageIndex: number) => {
-    const newImageUrls = element.exampleImageUrls?.filter((_, idx) => idx !== imageIndex) || [];
-    await onUpdate(element.id, { exampleImageUrls: newImageUrls });
+  const handleImageClick = (url: string, title: string) => {
+    setSelectedImage({ src: url, alt: `Example for ${title}` });
+  };
+
+  const handleImageDelete = async (imageIndex: number, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent triggering the image click
+    
+    if (!element.exampleImageUrls || imageIndex >= element.exampleImageUrls.length) {
+      return;
+    }
+
+    const imageUrl = element.exampleImageUrls[imageIndex];
+    
+    try {
+      // Extract filename from URL for deletion
+      const urlParts = imageUrl.split('/');
+      const fileName = urlParts[urlParts.length - 1];
+      
+      const response = await fetch(`/api/images/delete/${fileName}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.warn('Failed to delete image file:', errorData.error || 'Unknown error');
+        // Continue with removing from array even if file deletion fails
+      }
+
+      // Remove from the array regardless of file deletion success
+      const newImageUrls = element.exampleImageUrls.filter((_, idx) => idx !== imageIndex);
+      await onUpdate(element.id, { exampleImageUrls: newImageUrls });
+    } catch (error) {
+      console.error('Failed to delete image:', error);
+      // Still try to remove from array as fallback
+      const newImageUrls = element.exampleImageUrls.filter((_, idx) => idx !== imageIndex);
+      await onUpdate(element.id, { exampleImageUrls: newImageUrls });
+    }
   };
 
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800/30 shadow-sm hover:shadow-md transition-all duration-200">
-      <div
-        onClick={() => onToggle(index)}
-        className="p-5 flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200"
-      >
-        <div className="flex items-center gap-4 flex-1">
-          <div className="w-2 h-2 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex-shrink-0"></div>
-          <Typography variant="h6" className="text-gray-800 dark:text-gray-200 font-medium flex-1">
-            {element.title}
-          </Typography>
-          {element.price != null && element.price > 0 && (
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {isEditing ? (
-                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                  <Input
-                    size="sm"
-                    type="number"
-                    step="0.01"
-                    value={editPrice}
-                    onChange={(e) => setEditPrice(e.target.value)}
-                    className="!w-20 !border-gray-300 dark:!border-gray-600"
-                    disabled={updating}
-                  />
-                  <CustomFormButton 
-                    size="sm" 
-                    onClick={handlePriceUpdate} 
-                    className="!p-1"
-                    disabled={updating}
-                  >
-                    {updating ? <Spinner className="w-3 h-3" /> : '✓'}
-                  </CustomFormButton>
-                  <CustomFormButton 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={() => setIsEditing(false)} 
-                    className="!p-1"
-                    disabled={updating}
-                  >
-                    ✕
-                  </CustomFormButton>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Chip 
-                    color="success" 
-                    className="bg-gradient-to-r from-green-500 to-emerald-500 text-white font-medium shadow-sm"
-                    size="sm"
-                  >
-                    ${element.price.toFixed(2)}
-                  </Chip>
-                  {isOwner && (
-                    <CustomFormButton
-                      size="sm" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsEditing(true);
-                      }}
-                      className="!px-3"
-                      disabled={updating || deleteLoading}
-                    >
-                      <EditIcon className="w-3 h-3" />
-                    </CustomFormButton>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-          {isOwner && !isEditing && (
-            <CustomFormButton 
-              size="sm" 
-              color="error"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete();
-              }}
-              isFullWidth={false}
-              className="flex-shrink-0 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white rounded-full shadow-sm !px-3"
-              disabled={updating || deleteLoading}
-            >
-              {deleteLoading ? <Spinner className="w-3 h-3" /> : <DeleteIcon className="w-3 h-3" />}
-            </CustomFormButton>
-          )}
-        </div>
-        <ChevronDownIcon 
-          className={`h-5 w-5 text-gray-500 dark:text-gray-400 transition-transform duration-200 ml-2 flex-shrink-0 ${
-            isOpen ? 'rotate-180' : ''
-          }`} 
-        />
-      </div>
-      
-      {isOpen && (
-        <div className="px-5 pb-5 bg-gradient-to-r from-gray-50/50 to-gray-100/50 dark:from-gray-800/30 dark:to-gray-900/30">
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-            <Typography className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-              {element.description}
+    <>
+      <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-800/30 shadow-sm hover:shadow-md transition-all duration-200">
+        <div
+          onClick={() => onToggle(index)}
+          className="p-5 flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200"
+        >
+          <div className="flex items-center gap-4 flex-1">
+            <div className="w-2 h-2 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex-shrink-0"></div>
+            <Typography variant="h6" className="text-gray-800 dark:text-gray-200 font-medium flex-1">
+              {element.title}
             </Typography>
-            
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-gray-600 dark:text-gray-400 font-medium flex items-center gap-2 text-sm">
-                  <div className="w-1 h-1 bg-purple-500 rounded-full"></div>
-                  Example Gallery
-                </div>
-                {isOwner && (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                      id={`upload-${element.id}`}
+            {element.price != null && element.price > 0 && (
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {isEditing ? (
+                  <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <Input
+                      size="sm"
+                      type="number"
+                      step="0.01"
+                      value={editPrice}
+                      onChange={(e) => setEditPrice(e.target.value)}
+                      className="!w-20 !border-gray-300 dark:!border-gray-600"
+                      disabled={updating}
                     />
-                    <label htmlFor={`upload-${element.id}`}>
+                    <CustomFormButton 
+                      size="sm" 
+                      onClick={handlePriceUpdate} 
+                      className="!p-1"
+                      disabled={updating}
+                    >
+                      {updating ? <Spinner className="w-3 h-3" /> : '✓'}
+                    </CustomFormButton>
+                    <CustomFormButton 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => setIsEditing(false)} 
+                      className="!p-1"
+                      disabled={updating}
+                    >
+                      ✕
+                    </CustomFormButton>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Chip 
+                      color="success" 
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 text-white font-medium shadow-sm"
+                      size="sm"
+                    >
+                      ${element.price.toFixed(2)}
+                    </Chip>
+                    {isOwner && (
+                      <CustomFormButton
+                        size="sm" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsEditing(true);
+                        }}
+                        className="!px-3"
+                        disabled={updating || deleteLoading}
+                      >
+                        <EditIcon className="w-3 h-3" />
+                      </CustomFormButton>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+            {isOwner && !isEditing && (
+              <CustomFormButton 
+                size="sm" 
+                color="error"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete();
+                }}
+                isFullWidth={false}
+                className="flex-shrink-0 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white rounded-full shadow-sm !px-3"
+                disabled={updating || deleteLoading}
+              >
+                {deleteLoading ? <Spinner className="w-3 h-3" /> : <DeleteIcon className="w-3 h-3" />}
+              </CustomFormButton>
+            )}
+          </div>
+          <ChevronDownIcon 
+            className={`h-5 w-5 text-gray-500 dark:text-gray-400 transition-transform duration-200 ml-2 flex-shrink-0 ${
+              isOpen ? 'rotate-180' : ''
+            }`} 
+          />
+        </div>
+        
+        {isOpen && (
+          <div className="px-5 pb-5 bg-gradient-to-r from-gray-50/50 to-gray-100/50 dark:from-gray-800/30 dark:to-gray-900/30">
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+              <Typography className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                {element.description}
+              </Typography>
+              
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-gray-600 dark:text-gray-400 font-medium flex items-center gap-2 text-sm">
+                    <div className="w-1 h-1 bg-purple-500 rounded-full"></div>
+                    Example Gallery
+                  </div>
+                  {isOwner && (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        id={`upload-${element.id}`}
+                      />
                       <CustomFormButton
                         size="sm"
                         variant="outline"
-                        className="!py-1 !px-2 !text-xs cursor-pointer"
+                        className="!py-1 !px-2 !text-xs"
                         disabled={uploading}
                         isFullWidth={false}
+                        onClick={() => {
+                          const fileInput = document.getElementById(`upload-${element.id}`) as HTMLInputElement;
+                          fileInput?.click();
+                        }}
                       >
                         {uploading ? (
                           <Spinner className="w-3 h-3" />
@@ -390,49 +436,59 @@ const ServiceElement: React.FC<{
                           </>
                         )}
                       </CustomFormButton>
-                    </label>
+                    </div>
+                  )}
+                </div>
+
+                {uploadError && (
+                  <Typography variant="small" className="text-red-500 mb-2">
+                    {uploadError}
+                  </Typography>
+                )}
+
+                {element.exampleImageUrls && element.exampleImageUrls.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {element.exampleImageUrls.map((url, imgIndex) => (
+                      <div key={imgIndex} className="relative group aspect-square">
+                        <img 
+                          src={url} 
+                          alt={`Example for ${element.title}`} 
+                          className="w-full h-full object-cover rounded-lg shadow-md border border-gray-200 dark:border-gray-600 group-hover:shadow-lg transition-all duration-300 cursor-pointer transform group-hover:scale-105 group-active:scale-95"
+                          loading="lazy"
+                          onClick={() => handleImageClick(url, element.title)}
+                        />
+                        {isOwner && (
+                          <CustomFormButton
+                            onClick={(e) => handleImageDelete(imgIndex, e)}
+                            className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 shadow-lg transform group-hover:translate-y-0 translate-y-1"
+                            isFullWidth={false}
+                          >
+                            <DeleteIcon className="w-3 h-3" />
+                          </CustomFormButton>
+                        )}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-lg transition-all duration-300 pointer-events-none"></div>
+                      </div>
+                    ))}
                   </div>
+                ) : (
+                  <Typography variant="small" className="text-gray-500 dark:text-gray-400 italic">
+                    No example images yet
+                  </Typography>
                 )}
               </div>
-
-              {uploadError && (
-                <Typography variant="small" className="text-red-500 mb-2">
-                  {uploadError}
-                </Typography>
-              )}
-
-              {element.exampleImageUrls && element.exampleImageUrls.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                  {element.exampleImageUrls.map((url, imgIndex) => (
-                    <div key={imgIndex} className="relative group aspect-square">
-                      <img 
-                        src={url} 
-                        alt={`Example for ${element.title}`} 
-                        className="w-full h-full object-cover rounded-lg shadow-md border border-gray-200 dark:border-gray-600 group-hover:shadow-lg transition-all duration-200"
-                        loading="lazy"
-                      />
-                      {isOwner && (
-                        <CustomFormButton
-                          onClick={() => handleImageDelete(imgIndex)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                        >
-                          <DeleteIcon className="w-3 h-3" />
-                        </CustomFormButton>
-                      )}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-lg transition-colors duration-200 cursor-pointer"></div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <Typography variant="small" className="text-gray-500 dark:text-gray-400 italic">
-                  No example images yet
-                </Typography>
-              )}
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+
+      {/* Image Modal */}
+      <ImageModal
+        isOpen={selectedImage !== null}
+        imageSrc={selectedImage?.src || ''}
+        imageAlt={selectedImage?.alt || ''}
+        onClose={() => setSelectedImage(null)}
+      />
+    </>
   );
 };
 
@@ -764,7 +820,8 @@ export const CommissionCard: React.FC<CommissionCardProps> = ({
                 {isOwner && !showAddForm && (
                   <CustomFormButton
                     size="sm"
-                    onClick={() => setShowAddForm(true)}
+                    onClick={() => setShowAddForm(true)
+                    }
                     className="bg-green-600 hover:bg-green-700 text-white"
                     disabled={updating}
                   >
