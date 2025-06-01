@@ -11,6 +11,7 @@ import art.entities.CommissionCardElement;
 import art.entities.SocialProfile;
 import art.entities.Tag;
 import art.entities.User;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -578,12 +579,14 @@ public class UserResource {
     }
 
     // Static inner classes for request/response bodies
+    @RegisterForReflection
     public static class BlueskyLinkRequest {
         public String blueskyDid;
         public String blueskyHandle;
         public String blueskyDisplayName;
     }
 
+    @RegisterForReflection
     public static class ErrorResponse {
         public String message;
 
@@ -592,6 +595,7 @@ public class UserResource {
         }
     }
 
+    @RegisterForReflection
     public static class SuccessResponse {
         public String message;
 
