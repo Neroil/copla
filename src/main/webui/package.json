@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.2.2",
+    "@icons-pack/react-simple-icons": "^13.0.0",
     "@material-tailwind/react": "^3.0.0-beta.24",
     "@tailwindcss/vite": "^4.1.5",
+    "firebase": "^11.8.1",
     "framer-motion": "^12.15.0",
     "lucide-react": "^0.511.0",
     "react": "^19.0.0",
