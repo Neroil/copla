@@ -3,6 +3,7 @@ package art;
 import art.entities.Artist;
 import art.entities.CommissionCard;
 import art.entities.CommissionCardElement;
+import art.entities.Following;
 import art.entities.SocialProfile;
 import art.entities.Tag;
 import art.entities.User;
@@ -243,7 +244,77 @@ public class AppLifecycleBean {
             artist.persist();
         }
 
+                // Add copla1 and copla2 as artists with Bluesky accounts
+        if (!Artist.existsName("copla1")) {
+            Artist.add("copla1", "copla1", "copla1@example.com", true);
+            var artist = (Artist) Artist.findByUsername("copla1");
+            artist.profilePicPath = "/api/images/view/copla1_profile.jpg";
+            artist.bio = "Test artist with verified Bluesky account for development purposes.";
+            artist.verified = true;
+
+            // Add verified Bluesky profile
+            var blueskyProfile = new SocialProfile();
+            blueskyProfile.user = artist;
+            blueskyProfile.platform = "bluesky";
+            blueskyProfile.username = "copla1.bsky.social";
+            blueskyProfile.profileUrl = "https://bsky.app/profile/copla1.bsky.social";
+            blueskyProfile.isVerified = true;
+            blueskyProfile.displayName = "Copla Artist 1";
+            artist.socialProfiles.add(blueskyProfile);
+
+            artist.isOpenForCommissions = true;
+
+            // Add some tags
+            var digitalTag = Tag.findByName("Digital");
+            if (digitalTag != null)
+                artist.addTag(digitalTag);
+
+            artist.persist();
+        }
+
+        if (!Artist.existsName("copla2")) {
+            Artist.add("copla2", "copla2", "copla2@example.com", true);
+            var artist = (Artist) Artist.findByUsername("copla2");
+            artist.profilePicPath = "/api/images/view/copla2_profile.jpg";
+            artist.bio = "Another test artist with verified Bluesky account for development purposes.";
+            artist.verified = true;
+
+            // Add verified Bluesky profile
+            var blueskyProfile = new SocialProfile();
+            blueskyProfile.user = artist;
+            blueskyProfile.platform = "bluesky";
+            blueskyProfile.username = "copla2.bsky.social";
+            blueskyProfile.profileUrl = "https://bsky.app/profile/copla2.bsky.social";
+            blueskyProfile.isVerified = true;
+            blueskyProfile.displayName = "Copla Artist 2";
+            artist.socialProfiles.add(blueskyProfile);
+
+            // Add some tags
+            var illustrationTag = Tag.findByName("Illustration");
+            if (illustrationTag != null)
+                artist.addTag(illustrationTag);
+
+            artist.persist();
+        }
+
+        // Create sample following relationships for alice
+        var alice = User.findByUsername("alice");
+        var copla1 = User.findByUsername("copla1");
+        var copla2 = User.findByUsername("copla2");
+        var sakuraArt = User.findByUsername("sakura_art");
+        
+        if (alice != null && copla1 != null) {
+            Following.createOrUpdate(alice, "copla1.bsky.social", "did:copla1", "Copla Artist 1");
+        }
+        if (alice != null && copla2 != null) {
+            Following.createOrUpdate(alice, "copla2.bsky.social", "did:copla2", "Copla Artist 2");
+        }
+        if (alice != null && sakuraArt != null) {
+            Following.createOrUpdate(alice, "sakura.art", "did:sakura", "Sakura Art Studio");
+        }
+
         System.out.println(
-                "Initialized sample data: 3 users and 6 artists with various specializations, tags, and commission cards.");
+                "Initialized sample data: 3 users and 8 artists with various specializations, tags, commission cards, and following relationships.");
+
     }
 }

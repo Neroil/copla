@@ -142,11 +142,49 @@ const BlueskyVerif: React.FC<BlueskyVerifProps> = ({ appUsername, onClose, onSuc
                 throw new Error(errorData?.message || `Failed to link account: ${response.status}`);
             }
 
+            // After successful verification, try to sync followers
+            await syncBlueskyFollowers();
+
             onSuccess(`Successfully linked Bluesky account ${profileData.handle}`);
         } catch (err: any) {
             setError(err.message || 'Failed to verify account');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const syncBlueskyFollowers = async () => {
+        if (!agent) return;
+
+        try {
+            // Fetch following list from Bluesky
+            const followsResponse = await agent.getFollows({ 
+                actor: agent.did!,
+                limit: 100 // Adjust as needed
+            });
+
+            if (followsResponse.data.follows && followsResponse.data.follows.length > 0) {
+                const following = followsResponse.data.follows.map((follow: any) => ({
+                    handle: follow.handle,
+                    did: follow.did,
+                    displayName: follow.displayName || follow.handle
+                }));
+
+                // Send to backend
+                await fetch(`/api/users/${appUsername}/sync-bluesky-following`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ following }),
+                    credentials: 'include',
+                });
+
+                console.log(`Synced ${following.length} Bluesky followers`);
+            }
+        } catch (err) {
+            console.warn('Failed to sync Bluesky followers:', err);
+            // Don't throw error as this is secondary to the main verification
         }
     };
 
