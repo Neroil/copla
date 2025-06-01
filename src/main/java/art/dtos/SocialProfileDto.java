@@ -10,6 +10,9 @@ public class SocialProfileDto {
     public String username;
     public String profileUrl;
     public boolean isVerified;
+    public String did;
+    public String displayName;
+    public boolean canSync; // Indicates if we have sync capabilities
 
     public SocialProfileDto() {
     }
@@ -20,5 +23,8 @@ public class SocialProfileDto {
         this.username = socialProfile.username;
         this.profileUrl = socialProfile.profileUrl;
         this.isVerified = socialProfile.isVerified;
+        this.did = socialProfile.did;
+        this.displayName = socialProfile.displayName;
+        this.canSync = socialProfile.canSync;
     }
 }

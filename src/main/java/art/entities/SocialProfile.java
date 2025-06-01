@@ -24,4 +24,11 @@ public class SocialProfile extends PanacheEntity {
 
     public String did;
     public String displayName;
+
+    // Encrypted session data for sync capabilities
+    @Column(columnDefinition = "TEXT")
+    public String encryptedSessionData;
+
+    @Column
+    public boolean canSync = false;
 }

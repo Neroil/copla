@@ -14,6 +14,7 @@ import { ErrorAlert } from "../ui-component/ErrorAlert";
 import { UserCard } from "../ui-component/UserCard";
 import { EmptyState } from "../ui-component/EmptyState";
 import { motion, AnimatePresence } from "framer-motion";
+import BlueskyFollowingSync from "../ui-component/BlueskyFollowingSync";
 
 // Define interface for user social profiles
 interface SocialProfile {
@@ -317,6 +318,10 @@ function ArtistDirectory() {
                                                 ({followedArtistIds.length})
                                             </Typography>
                                         )}
+                                        <BlueskyFollowingSync 
+                                            username={currentUser} 
+                                            onSync={loadFollowingData}
+                                        />
                                     </motion.div>
                                 )}
 

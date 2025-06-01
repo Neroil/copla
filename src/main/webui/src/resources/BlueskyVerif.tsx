@@ -3,6 +3,7 @@ import { Agent } from '@atproto/api';
 import { BrowserOAuthClient } from '@atproto/oauth-client-browser';
 import { Alert, Card, CardBody, CardHeader, Spinner, Typography } from '@material-tailwind/react';
 import CustomFormButton from '../ui-component/CustomFormButton';
+import { BlueskyService } from '../services/BlueskyService';
 
 interface BlueskyVerifProps {
     appUsername: string;
@@ -115,13 +116,16 @@ const BlueskyVerif: React.FC<BlueskyVerifProps> = ({ appUsername, onClose, onSuc
     };
 
     const handleVerifyAccount = async () => {
-        if (!agent || !profileData) {
+        if (!agent || !profileData || !sessionStore) {
             setError('No authenticated session available');
             return;
         }
 
         try {
             setLoading(true);
+
+            // Store the complete session data needed for API calls
+            const sessionDataToStore = JSON.stringify(sessionStore);
 
             // Make API call to your backend to link the Bluesky account
             const response = await fetch('/api/users/link-bluesky', {
@@ -133,6 +137,7 @@ const BlueskyVerif: React.FC<BlueskyVerifProps> = ({ appUsername, onClose, onSuc
                     blueskyDid: agent.did,
                     blueskyHandle: profileData.handle,
                     blueskyDisplayName: profileData.displayName,
+                    sessionData: sessionDataToStore,
                 }),
                 credentials: 'include',
             });
@@ -157,30 +162,11 @@ const BlueskyVerif: React.FC<BlueskyVerifProps> = ({ appUsername, onClose, onSuc
         if (!agent) return;
 
         try {
-            // Fetch following list from Bluesky
-            const followsResponse = await agent.getFollows({ 
-                actor: agent.did!,
-                limit: 100 // Adjust as needed
-            });
-
-            if (followsResponse.data.follows && followsResponse.data.follows.length > 0) {
-                const following = followsResponse.data.follows.map((follow: any) => ({
-                    handle: follow.handle,
-                    did: follow.did,
-                    displayName: follow.displayName || follow.handle
-                }));
-
-                // Send to backend
-                await fetch(`/api/users/${appUsername}/sync-bluesky-following`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ following }),
-                    credentials: 'include',
-                });
-
-                console.log(`Synced ${following.length} Bluesky followers`);
+            const following = await BlueskyService.fetchBlueskyFollowing(agent);
+            
+            if (following.length > 0) {
+                const result = await BlueskyService.syncFollowingWithBackend(appUsername, following);
+                console.log(`Synced ${result.syncedCount} Bluesky followers, ${result.linkedCount} linked to app users`);
             }
         } catch (err) {
             console.warn('Failed to sync Bluesky followers:', err);

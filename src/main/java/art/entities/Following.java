@@ -35,6 +35,10 @@ public class Following extends PanacheEntity {
         return find("follower = ?1 and followed.role = 'artist' and followed.isOpenForCommissions = true", follower).list();
     }
     
+    public static void deleteByFollower(User follower) {
+        delete("follower", follower);
+    }
+    
     public static void createOrUpdate(User follower, String blueskyHandle, String blueskyDid, String displayName) {
         Following existing = findByFollowerAndHandle(follower, blueskyHandle);
         if (existing == null) {
@@ -74,4 +78,6 @@ public class Following extends PanacheEntity {
         // Look for users with matching Bluesky profiles
         return User.find("SELECT u FROM User u JOIN u.socialProfiles sp WHERE sp.platform = 'bluesky' AND sp.username = ?1", blueskyHandle).firstResult();
     }
+
+    
 }
