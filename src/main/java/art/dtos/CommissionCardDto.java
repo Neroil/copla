@@ -3,7 +3,9 @@ package art.dtos;
 import java.util.List;
 import java.util.ArrayList;
 import art.entities.CommissionCard;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public class CommissionCardDto {
     public Long id;
     public String title;

@@ -1,7 +1,9 @@
 package art.dtos;
 
 import art.entities.SocialProfile;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public class SocialProfileDto {
     public Long id;
     public String platform;

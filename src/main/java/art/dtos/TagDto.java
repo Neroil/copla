@@ -1,7 +1,9 @@
 package art.dtos;
 
 import art.entities.Tag;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public class TagDto {
     public Long id;
     public String name;

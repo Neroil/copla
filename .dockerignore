@@ -1,5 +1,5 @@
-*
-!build/*-runner
-!build/*-runner.jar
-!build/lib/*
-!build/quarkus-app/*
+node_modules/
+.git/
+.idea/
+*.log
+.gradle/build-cache/

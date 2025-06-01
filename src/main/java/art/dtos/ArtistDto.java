@@ -1,7 +1,9 @@
 package art.dtos;
 
 import art.entities.Artist;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public class ArtistDto extends UserDto {
     public boolean verified;
     public boolean isOpenForCommissions;

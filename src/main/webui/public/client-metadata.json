@@ -1,8 +1,8 @@
 {
-  "client_id": "https://copla.pagekite.me/client-metadata.json",
+  "client_id": "https://copla.zapto.org/client-metadata.json",
   "client_name": "Bluesky Account Verification",
-  "client_uri": "https://copla.pagekite.me/",
-  "redirect_uris": ["https://copla.pagekite.me/callback"],
+  "client_uri": "https://copla.zapto.org/",
+  "redirect_uris": ["https://copla.zapto.org/callback"],
   "grant_types": ["authorization_code"],
   "response_types": ["code"],
   "scope": "atproto transition:generic",

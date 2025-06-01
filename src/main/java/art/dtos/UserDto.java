@@ -2,7 +2,9 @@ package art.dtos;
 
 import java.time.LocalDateTime;
 import art.entities.User;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public class UserDto {
     public Long id;
     public String name;
