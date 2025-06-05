@@ -2,12 +2,13 @@
 import { useEffect, useState } from "react";
 import {
     Typography, Input, Button,
-    Slider, Checkbox, Tabs, TabsList, TabsTrigger,
+    Slider, Tabs, TabsList, TabsTrigger,
     Spinner
 } from "@material-tailwind/react";
 import { DollarSign, Clock, Palette } from "lucide-react";
 import { PageLayout } from "../ui-component/PageLayout";
 import { CustomTagComponent } from "../ui-component/CustomTagComponent.tsx";
+import { CustomCheckbox } from "../ui-component/CustomCheckbox.tsx";
 import { PageHeader } from "../ui-component/PageHeader";
 import { LoadingSpinner } from "../ui-component/LoadingSpinner";
 import { ErrorAlert } from "../ui-component/ErrorAlert";
@@ -303,11 +304,11 @@ function ArtistDirectory() {
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: 0.2 * animationSpeed, duration: 0.4 * animationSpeed }}
                                     >
-                                        <Checkbox
+                                        <CustomCheckbox
                                             checked={followingOnly}
-                                            onChange={(e) => setFollowingOnly(e.target.checked)}
-                                            color="primary"
+                                            onChange={setFollowingOnly}
                                             disabled={followingLoading}
+                                            colorScheme="indigo"
                                         />
                                         <Typography variant="small" className="font-medium text-indigo-700 dark:text-indigo-200">
                                             Following Only {followingLoading && <Spinner className="inline h-3 w-3 ml-1" />}
@@ -327,10 +328,10 @@ function ArtistDirectory() {
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: 0.3 * animationSpeed, duration: 0.4 * animationSpeed }}
                                 >
-                                    <Checkbox
+                                    <CustomCheckbox
                                         checked={verifiedOnly}
-                                        onChange={(e) => setVerifiedOnly(e.target.checked)}
-                                        color="primary"
+                                        onChange={setVerifiedOnly}
+                                        colorScheme="blue"
                                     />
                                     <Typography variant="small" className="font-medium text-blue-700 dark:text-blue-200">
                                         Verified Artists Only
@@ -478,10 +479,13 @@ function ArtistDirectory() {
                                         { statusType: "closed", label: "Closed", color: "error" }
                                     ].map(({ statusType, label, color }) => (
                                         <div key={statusType} className="flex items-center gap-2">
-                                            <Checkbox
+                                            <CustomCheckbox
                                                 checked={availabilityFilter.includes(statusType)}
                                                 onChange={() => handleAvailabilityChange(statusType)}
-                                                color={color as any}
+                                                colorScheme={
+                                                    statusType === 'open' ? 'green' :
+                                                    statusType === 'busy' ? 'yellow' : 'red'
+                                                }
                                             />
                                             <Typography variant="small" className="font-medium dark:text-gray-200">
                                                 {label}
@@ -520,7 +524,7 @@ function ArtistDirectory() {
                                             color="primary"
                                             onClick={handleAddCustomTag}
                                             disabled={!customTagInput.trim()}
-                                            className="shrink-0"
+                                            className="shrink-0 dark:text-white text-white"
                                         >
                                             Add
                                         </Button>
@@ -534,7 +538,8 @@ function ArtistDirectory() {
                                             key={tag}
                                             tag={tag}
                                             variant={selectedTags.includes(tag) ? "current" : "add"}
-                                            onClick={() => handleTagToggle(tag)}
+                                            onClick={() => handleTagToggle(tag)
+                                            }
                                         />
                                     ))}
                                 </div>
