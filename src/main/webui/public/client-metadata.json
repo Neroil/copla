@@ -1,8 +1,8 @@
 {
-  "client_id": "https://copla.zapto.org/client-metadata.json",
+  "client_id": "https://b809-2a07-3e00-80-1951-ce12-6be0-30b7-6b41.ngrok-free.app/client-metadata.json",
   "client_name": "Bluesky Account Verification",
-  "client_uri": "https://copla.zapto.org/",
-  "redirect_uris": ["https://copla.zapto.org/callback"],
+  "client_uri": "https://b809-2a07-3e00-80-1951-ce12-6be0-30b7-6b41.ngrok-free.app/",
+  "redirect_uris": ["https://b809-2a07-3e00-80-1951-ce12-6be0-30b7-6b41.ngrok-free.app/callback"],
   "grant_types": ["authorization_code"],
   "response_types": ["code"],
   "scope": "atproto transition:generic",
