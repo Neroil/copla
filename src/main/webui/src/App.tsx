@@ -189,49 +189,51 @@ function App() {
 
                 {!loading && (
                     <>
-                        {/* Quick Action Section */}
-                        <motion.section 
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                            className="text-center"
-                        >
-                            <div className="max-w-3xl mx-auto">
-                                <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-gray-900 dark:text-white">
-                                    {userType === 'client' ? 'Ready to Commission?' : 'Ready to Get Discovered?'}
-                                </h2>
-                                <p className="text-lg text-gray-600 dark:text-gray-300 mb-10">
-                                    {userType === 'client'
-                                        ? 'Browse artists, check their commission status, and connect with creators whose style matches your vision.'
-                                        : 'Manage your commission availability and let clients easily find you when you\'re open for work.'
-                                    }
-                                </p>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
-                                    <Button
-                                        size="lg"
-                                        className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-2xl px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                                        ripple={true}
-                                        onClick={() => window.location.href = userType === 'client' ? '/artists' : '/commissions'}
-                                    >
-                                        <div className="flex flex-col items-center gap-2">
-                                            <Users className="w-8 h-8" />
-                                            <span>{userType === 'client' ? 'Browse Artists' : 'Check Competition'}</span>
-                                        </div>
-                                    </Button>
-                                    <Button
-                                        size="lg"
-                                        className="bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-700 hover:to-teal-700 text-white rounded-2xl px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                                        ripple={true}
-                                        onClick={() => window.location.href = userType === 'client' ? '/profile' : '/profile'}
-                                    >
-                                        <div className="flex flex-col items-center gap-2">
-                                            <Search className="w-8 h-8" />
-                                            <span>{userType === 'client' ? 'Edit Profile' : 'Setup My Status'}</span>
-                                        </div>
-                                    </Button>
+                        {/* Quick Action Section - Only show when logged in */}
+                        {isLoggedIn && (
+                            <motion.section 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                                className="text-center"
+                            >
+                                <div className="max-w-3xl mx-auto">
+                                    <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-gray-900 dark:text-white">
+                                        {userType === 'client' ? 'Ready to Commission?' : 'Ready to Get Discovered?'}
+                                    </h2>
+                                    <p className="text-lg text-gray-600 dark:text-gray-300 mb-10">
+                                        {userType === 'client'
+                                            ? 'Browse artists, check their commission status, and connect with creators whose style matches your vision.'
+                                            : 'Manage your commission availability and let clients easily find you when you\'re open for work.'
+                                        }
+                                    </p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                                        <Button
+                                            size="lg"
+                                            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-2xl px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                                            ripple={true}
+                                            onClick={() => window.location.href = userType === 'client' ? '/artists' : '/commissions'}
+                                        >
+                                            <div className="flex flex-col items-center gap-2">
+                                                <Users className="w-8 h-8" />
+                                                <span>{userType === 'client' ? 'Browse Artists' : 'Check Competition'}</span>
+                                            </div>
+                                        </Button>
+                                        <Button
+                                            size="lg"
+                                            className="bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-700 hover:to-teal-700 text-white rounded-2xl px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                                            ripple={true}
+                                            onClick={() => window.location.href = userType === 'client' ? '/profile' : '/profile'}
+                                        >
+                                            <div className="flex flex-col items-center gap-2">
+                                                <Search className="w-8 h-8" />
+                                                <span>{userType === 'client' ? 'Edit Profile' : 'Setup My Status'}</span>
+                                            </div>
+                                        </Button>
+                                    </div>
                                 </div>
-                            </div>
-                        </motion.section>
+                            </motion.section>
+                        )}
 
                         {/* Social Platform Introduction */}
                         <motion.section 
