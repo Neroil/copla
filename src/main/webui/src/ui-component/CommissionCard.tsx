@@ -378,7 +378,7 @@ const ServiceElement: React.FC<{
                   handleDelete();
                 }}
                 isFullWidth={false}
-                className="flex-shrink-0 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white rounded-full shadow-sm !px-3"
+                className="flex-shrink-0 bg-red-500 hover:bg-red-600 active:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 dark:active:bg-red-800 text-white rounded-full shadow-sm !px-3"
                 disabled={updating || deleteLoading}
               >
                 {deleteLoading ? <Spinner className="w-3 h-3" /> : <DeleteIcon className="w-3 h-3" />}

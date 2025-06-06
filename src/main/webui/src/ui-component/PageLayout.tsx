@@ -1,6 +1,11 @@
-import React from "react";
+import React, { createContext, useContext, useState } from "react";
 import { Header } from "./Header"; // Adjust path if Header is elsewhere
 import { Spinner } from "@material-tailwind/react"; // For a potential global loading state if needed
+import { SiGithub } from "@icons-pack/react-simple-icons";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "../FirebaseConfig";
+import { motion, AnimatePresence } from "framer-motion";
+import { CoPlaIcon } from "./CustomIcons";
 
 interface PageLayoutProps {
     children: React.ReactNode;
@@ -10,91 +15,242 @@ interface PageLayoutProps {
     loadingText?: string;
 }
 
-const CoPlaIcon = ({ className }: { className?: string }) => (
-    <svg
-        className={className || "w-6 h-6"}
-        viewBox="0 0 300 298"
-        xmlns="http://www.w3.org/2000/svg"
-    >
-        <g transform="translate(0.000000,298.000000) scale(0.100000,-0.100000)"
-           fill="currentColor"
-           stroke="currentColor"
-           strokeWidth="6">
-            <path d="M246 2958 c-13 -21 -27 -66 -56 -175 -17 -69 -50 -352 -50 -438 0
-      -207 82 -474 206 -666 24 -38 44 -71 44 -74 0 -2 -15 -2 -32 1 -84 15 -188 36
-      -241 50 -67 17 -87 9 -87 -35 0 -72 118 -225 224 -291 31 -19 56 -39 56 -44 0
-      -6 -34 -79 -76 -163 -43 -87 -74 -163 -72 -176 7 -48 131 -60 287 -27 52 11
-      97 17 100 12 10 -14 93 -58 167 -87 67 -27 73 -32 95 -80 23 -49 149 -188 179
-      -197 11 -4 3 -18 -30 -54 -25 -27 -61 -75 -79 -107 -27 -47 -31 -60 -21 -72
-      14 -17 70 -19 140 -5 25 4 46 7 48 6 1 -2 -7 -23 -17 -47 -23 -51 -81 -248
-      -81 -273 0 -13 7 -17 27 -14 23 3 29 9 34 43 4 22 26 94 49 160 23 66 42 134
-      43 150 2 30 1 30 -48 30 -27 0 -69 -4 -93 -8 l-43 -7 18 31 c10 18 46 61 81
-      96 35 36 61 70 59 76 -2 6 -30 27 -62 46 -35 21 -79 61 -107 96 -51 63 -59 81
-      -30 70 37 -15 213 -55 239 -55 15 0 48 7 73 14 l45 14 -30 12 c-16 6 -54 13
-      -83 15 -132 9 -465 123 -529 182 -28 27 -65 29 -143 8 -30 -8 -96 -15 -147
-      -15 l-91 0 74 148 c80 159 101 232 68 232 -22 0 -114 58 -158 98 -15 15 -46
-      53 -67 84 -42 62 -51 95 -21 83 35 -14 245 -55 281 -55 47 0 81 10 81 23 0 5
-      -27 52 -61 104 -103 160 -165 314 -200 502 -24 132 -24 198 1 388 21 164 30
-      209 66 323 13 41 24 78 24 83 0 17 -41 5 -54 -15z"/>
-            <path d="M742 2963 c8 -10 52 -61 99 -113 138 -157 195 -222 241 -279 61 -76
-      65 -83 51 -88 -19 -7 -96 -61 -138 -97 -34 -30 -38 -37 -28 -53 6 -10 16 -17
-      22 -15 6 1 124 4 262 6 260 3 298 10 254 42 -16 12 -55 14 -215 10 -107 -2
-      -203 -7 -212 -11 -10 -4 -18 -3 -18 3 0 10 90 72 104 72 4 0 36 14 72 31 50
-      25 72 30 99 25 28 -6 35 -4 35 9 0 9 9 15 23 15 l22 1 -23 19 c-13 10 -29 17
-      -37 14 -27 -11 -128 208 -137 296 l-3 35 40 -3 c57 -5 189 -39 265 -69 118
-      -48 284 -160 413 -281 71 -68 143 -119 153 -109 3 2 -18 32 -46 66 l-51 61 21
-      61 c11 34 36 91 57 127 37 67 139 177 194 209 39 23 37 33 -10 33 -35 0 -48
-      -8 -101 -57 -98 -91 -190 -242 -190 -313 0 -33 -7 -37 -24 -16 -21 26 -141
-      122 -212 169 -147 97 -337 164 -477 168 -74 2 -87 -5 -87 -51 0 -44 40 -172
-      78 -250 20 -41 38 -77 40 -80 3 -7 -58 -30 -79 -30 -8 0 -31 21 -52 48 -71 91
-      -109 137 -145 177 -20 22 -70 78 -111 125 -89 104 -97 110 -134 110 -28 0 -29
-      -1 -15 -17z"/>
-            <path d="M2844 2954 c4 -15 9 -52 11 -83 2 -31 8 -87 12 -126 10 -89 10 -411
-      0 -536 -14 -180 -72 -321 -181 -443 -66 -73 -89 -90 -138 -100 -19 -4 -28 -13
-      -28 -25 0 -28 18 -30 100 -15 85 17 221 15 227 -2 2 -7 -2 -18 -9 -25 -7 -8
-      -40 -47 -72 -88 -33 -40 -86 -96 -118 -124 -32 -27 -58 -56 -58 -64 0 -7 15
-      -27 34 -44 19 -16 49 -53 67 -82 18 -28 48 -76 67 -105 19 -29 33 -55 31 -57
-      -2 -2 -49 -11 -104 -21 -127 -22 -232 -22 -248 0 -11 14 -25 10 -127 -42 -134
-      -67 -231 -102 -286 -102 -58 0 -84 -10 -84 -31 0 -13 9 -19 32 -21 29 -3 35
-      -11 96 -128 127 -246 189 -405 238 -613 16 -68 21 -77 41 -77 17 0 23 6 23 23
-      0 51 -75 309 -119 410 -41 95 -173 357 -182 363 -15 9 10 34 34 34 23 0 194
-      71 255 106 39 23 46 24 104 14 45 -9 83 -8 147 0 47 7 95 13 106 14 45 6 131
-      30 143 41 11 10 -3 37 -71 141 -46 71 -96 139 -110 152 l-25 23 57 57 c122
-      123 211 235 211 266 0 28 -61 46 -155 46 l-85 0 58 58 c35 36 70 84 90 127 19
-      39 38 78 43 88 5 9 18 54 29 100 25 106 36 451 22 692 -12 195 -19 225 -58
-      225 -23 0 -25 -3 -20 -26z"/>
-            <path d="M2135 1944 c-113 -6 -318 -23 -341 -30 -11 -3 -29 -20 -40 -37 -16
-      -28 -19 -52 -19 -177 0 -160 4 -174 72 -257 56 -70 128 -71 192 -4 61 63 72
-      114 69 295 l-3 156 65 0 c36 0 75 3 86 6 19 5 26 -3 47 -49 49 -107 59 -161
-      56 -296 -2 -81 1 -133 8 -146 11 -19 13 -19 30 -2 16 15 18 36 18 155 0 140
-      -15 216 -59 300 l-15 30 50 4 c47 5 74 22 63 39 -2 4 -12 7 -22 7 -9 -1 -55 1
-      -102 4 -47 3 -116 4 -155 2z m-105 -206 c0 -152 -2 -167 -25 -215 -24 -52 -71
-      -93 -107 -93 -25 0 -76 47 -101 94 -19 36 -22 56 -22 171 0 176 2 180 127 192
-      51 6 101 11 111 12 16 1 17 -13 17 -161z"/>
-            <path d="M563 1861 c-23 -22 -9 -36 40 -39 51 -3 54 -7 34 -37 -29 -42 -50
-      -150 -51 -255 -1 -97 1 -108 26 -151 33 -56 55 -68 64 -35 3 14 -3 37 -17 61
-      -36 60 -31 198 10 318 35 101 30 97 134 97 l92 0 0 -142 c0 -167 14 -222 74
-      -290 37 -41 41 -43 94 -43 57 0 88 19 116 72 21 41 40 160 47 301 l7 141 -24
-      5 c-13 3 -161 7 -328 8 -247 2 -307 0 -318 -11z m621 -53 c13 -21 -6 -245 -28
-      -328 -15 -59 -53 -100 -93 -100 -34 0 -89 55 -107 107 -12 34 -16 86 -16 195
-      l0 149 116 -3 c97 -3 119 -6 128 -20z"/>
-            <path d="M1313 1373 c-26 -10 -12 -32 23 -39 33 -6 129 2 145 12 5 3 6 11 3
-      18 -4 10 -27 14 -82 14 -42 0 -83 -2 -89 -5z"/>
-            <path d="M2176 1285 c-40 -38 -46 -48 -36 -60 17 -20 30 -19 57 7 l23 21 0
-      -47 c0 -33 4 -48 16 -53 9 -3 19 -2 23 3 3 5 22 21 43 36 61 46 108 94 108
-      112 0 30 -40 17 -90 -30 l-49 -46 -3 49 c-4 65 -27 67 -92 8z"/>
-            <path d="M500 1287 c-30 -15 -46 -29 -48 -45 -4 -27 19 -29 62 -7 42 22 47 19
-      30 -21 -15 -35 -14 -38 4 -57 20 -19 20 -19 103 18 102 46 129 63 129 81 0 23
-      -50 16 -115 -16 -33 -16 -61 -27 -64 -25 -2 3 2 18 9 35 25 60 -27 77 -110 37z"/>
-            <path d="M1755 1157 c-27 -20 -39 -22 -135 -19 -58 2 -125 4 -150 5 -35 1 -57
-      -6 -96 -31 -59 -37 -110 -42 -155 -15 -27 16 -30 16 -45 1 -22 -21 -11 -36 43
-      -59 64 -27 92 -24 178 21 69 37 79 40 113 30 48 -13 203 -13 239 1 34 12 83
-      58 83 76 0 20 -42 15 -75 -10z"/>
-        </g>
-    </svg>
-);
+// --- Feedback Context ---
+interface FeedbackContextType {
+    showFeedbackModal: () => void;
+}
 
+const FeedbackContext = createContext<FeedbackContextType | null>(null);
 
+export const useFeedback = () => {
+    const context = useContext(FeedbackContext);
+    if (!context) {
+        throw new Error('useFeedback must be used within a FeedbackProvider');
+    }
+    return context;
+};
+
+// --- Feedback Modal Component ---
+interface FeedbackModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
+
+const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
+    const [feedback, setFeedback] = useState('');
+    const [email, setEmail] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitted, setIsSubmitted] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        setError('');
+        
+        try {
+            // Save to Firebase Firestore instead of mailto
+            await addDoc(collection(db, 'feedback'), {
+                feedback: feedback.trim(),
+                email: email.trim() || null,
+                timestamp: serverTimestamp(),
+                userAgent: navigator.userAgent,
+                url: window.location.href,
+                buildType: 'development'
+            });
+            
+            setIsSubmitted(true);
+            
+            // Close modal after a delay
+            setTimeout(() => {
+                setIsSubmitted(false);
+                setFeedback('');
+                setEmail('');
+                onClose();
+            }, 2000);
+            
+        } catch (err) {
+            console.error('Error submitting feedback:', err);
+            setError('Failed to submit feedback. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <AnimatePresence>
+            {isOpen && (
+                <motion.div 
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    onClick={onClose}
+                >
+                    <motion.div 
+                        className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+                        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-6">
+                            <motion.div 
+                                className="flex items-center justify-between mb-4"
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.1, duration: 0.2 }}
+                            >
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    Send Feedback
+                                </h3>
+                                <button
+                                    onClick={onClose}
+                                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </motion.div>
+                            
+                            <AnimatePresence mode="wait">
+                                {isSubmitted ? (
+                                    <motion.div 
+                                        className="text-center py-8"
+                                        key="success"
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.8 }}
+                                        transition={{ duration: 0.3, ease: "easeOut" }}
+                                    >
+                                        <motion.div 
+                                            className="text-green-500 mb-2"
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
+                                            transition={{ delay: 0.1, duration: 0.4, type: "spring" }}
+                                        >
+                                            <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </motion.div>
+                                        <motion.p 
+                                            className="text-gray-700 dark:text-gray-300"
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.2, duration: 0.3 }}
+                                        >
+                                            Thank you for your feedback!
+                                        </motion.p>
+                                    </motion.div>
+                                ) : (
+                                    <motion.form 
+                                        onSubmit={handleSubmit} 
+                                        className="space-y-4"
+                                        key="form"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{ duration: 0.2 }}
+                                    >
+                                        <motion.div 
+                                            className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3"
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.15, duration: 0.2 }}
+                                        >
+                                            <p className="text-sm text-orange-800 dark:text-orange-200">
+                                                <strong>Development Build:</strong> You're using a development version of CoPla. 
+                                                Your feedback helps us improve the application!
+                                            </p>
+                                        </motion.div>
+                                        
+                                        <AnimatePresence>
+                                            {error && (
+                                                <motion.div 
+                                                    className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3"
+                                                    initial={{ opacity: 0, height: 0 }}
+                                                    animate={{ opacity: 1, height: "auto" }}
+                                                    exit={{ opacity: 0, height: 0 }}
+                                                    transition={{ duration: 0.2 }}
+                                                >
+                                                    <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                        
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.2, duration: 0.2 }}
+                                        >
+                                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                Email (optional)
+                                            </label>
+                                            <input
+                                                type="email"
+                                                id="email"
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                                                placeholder="your.email@example.com"
+                                            />
+                                        </motion.div>
+                                        
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.25, duration: 0.2 }}
+                                        >
+                                            <label htmlFor="feedback" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                Feedback *
+                                            </label>
+                                            <textarea
+                                                id="feedback"
+                                                value={feedback}
+                                                onChange={(e) => setFeedback(e.target.value)}
+                                                required
+                                                rows={4}
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                                                placeholder="Share your thoughts, report bugs, or suggest improvements..."
+                                            />
+                                        </motion.div>
+                                        
+                                        <motion.div 
+                                            className="flex gap-3 pt-2"
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.3, duration: 0.2 }}
+                                        >
+                                            <button
+                                                type="button"
+                                                onClick={onClose}
+                                                className="flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                disabled={!feedback.trim() || isSubmitting}
+                                                className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-md transition-colors"
+                                            >
+                                                {isSubmitting ? 'Sending...' : 'Send Feedback'}
+                                            </button>
+                                        </motion.div>
+                                    </motion.form>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
+};
 
 const PageLayout: React.FC<PageLayoutProps> = ({
                                                    children,
@@ -103,34 +259,60 @@ const PageLayout: React.FC<PageLayoutProps> = ({
                                                    isLoading = false,
                                                    loadingText = "Loading, please wait..."
                                                }) => {
+    const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+
+    const feedbackContextValue = {
+        showFeedbackModal: () => setIsFeedbackModalOpen(true)
+    };
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-100 via-purple-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-900 flex flex-col text-gray-800 dark:text-gray-200">
-            <Header />
-            <main className="flex-grow flex flex-col items-center justify-start p-4 sm:p-6 lg:p-8 pt-10 sm:pt-12 lg:pt-16">
-                {pageTitle && (
-                    <div className="flex items-center gap-3 mb-8">
-                        <CoPlaIcon className="w-10 h-10 text-purple-600 dark:text-purple-400" />
-                        <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 dark:text-white text-center">
-                            {pageTitle}
-                        </h1>
-                    </div>
-                )}
-                <div className={`w-full ${contentMaxWidth}`}>
-                    {isLoading ? (
-                        <div className="flex flex-col items-center justify-center p-10 bg-white dark:bg-gray-800 shadow-xl rounded-lg">
-                            <Spinner className="h-12 w-12 text-purple-600 dark:text-purple-400" />
-                            <p className="mt-4 text-lg text-gray-700 dark:text-gray-300">{loadingText}</p>
+        <FeedbackContext.Provider value={feedbackContextValue}>
+            <div className="min-h-screen bg-gradient-to-br from-gray-100 via-purple-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-900 flex flex-col text-gray-800 dark:text-gray-200">
+                <Header />
+                <main className="flex-grow flex flex-col items-center justify-start p-4 sm:p-6 lg:p-8 pt-10 sm:pt-12 lg:pt-16">
+                    {pageTitle && (
+                        <div className="flex items-center gap-3 mb-8">
+                            <CoPlaIcon className="w-10 h-10 text-purple-600 dark:text-purple-400" />
+                            <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 dark:text-white text-center">
+                                {pageTitle}
+                            </h1>
                         </div>
-                    ) : (
-                        children
                     )}
-                </div>
-            </main>
-            <footer className="py-8 text-center text-gray-600 dark:text-gray-400 text-sm border-t border-gray-200 dark:border-gray-700">
-                © {new Date().getFullYear()} CoPla - Art Commission Platform. All rights reserved.
-            </footer>
-        </div>
+                    <div className={`w-full ${contentMaxWidth}`}>
+                        {isLoading ? (
+                            <div className="flex flex-col items-center justify-center p-10 bg-white dark:bg-gray-800 shadow-xl rounded-lg">
+                                <Spinner className="h-12 w-12 text-purple-600 dark:text-purple-400" />
+                                <p className="mt-4 text-lg text-gray-700 dark:text-gray-300">{loadingText}</p>
+                            </div>
+                        ) : (
+                            children
+                        )}
+                    </div>
+                </main>
+                <footer className="py-6 text-center text-gray-600 dark:text-gray-400 text-sm border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-center gap-6">
+                        <div 
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg border border-gray-300 dark:border-gray-600 transition-all cursor-pointer hover:scale-105 transform"
+                            onClick={() => window.open("https://github.com/Neroil/copla", "_blank")}
+                            title="Star us on GitHub!"
+                        >
+                            <SiGithub className="text-gray-600 dark:text-gray-400" />
+                            <span className="text-gray-700 dark:text-gray-300 font-medium">Star us on GitHub!</span>
+                        </div>
+                        <div className="text-gray-500 dark:text-gray-400">
+                            © {new Date().getFullYear()} CoPla - Art Commission Platform. Early Alpha Development Build.
+                        </div>
+                    </div>
+                </footer>
+                
+                {/* Feedback Modal - renders at page level */}
+                <FeedbackModal 
+                    isOpen={isFeedbackModalOpen} 
+                    onClose={() => setIsFeedbackModalOpen(false)} 
+                />
+            </div>
+        </FeedbackContext.Provider>
     );
 };
 
-export { PageLayout , CoPlaIcon};
+export { PageLayout};

@@ -3,8 +3,10 @@ package art.resources;
 import art.dtos.ArtistDto;
 import art.dtos.CommissionCardDto;
 import art.dtos.CommissionCardElementDto;
+import art.dtos.FollowingDto;
 import art.dtos.SocialProfileDto;
 import art.dtos.UserDto;
+import art.entities.Following;
 import art.entities.Artist;
 import art.entities.CommissionCard;
 import art.entities.CommissionCardElement;
@@ -578,6 +580,107 @@ public class UserResource {
                 "isOpenForCommissions", artist.isOpenForCommissions)).build();
     }
 
+    @GET
+    @Path("/{username}/following")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getFollowing(@PathParam("username") String username,
+                                @QueryParam("openOnly") Boolean openOnly) {
+        Response validation = validateUserExists(username);
+        if (validation != null) return validation;
+        
+        validation = validateOwnership(username);
+        if (validation != null) return validation;
+
+        User user = User.findByUsername(username);
+        
+        List<Following> followingList;
+        if (openOnly != null && openOnly) {
+            followingList = Following.findOpenForCommissions(user);
+        } else {
+            followingList = Following.findByFollower(user);
+        }
+        
+        var followingDtos = followingList.stream()
+                .map(FollowingDto::new)
+                .toList();
+        
+        return Response.ok(followingDtos).build();
+    }
+
+    @POST
+    @Path("/{username}/sync-bluesky-following")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response syncBlueskyFollowing(@PathParam("username") String username, 
+                                       BlueskyFollowingRequest request) {
+        Response validation = validateUserExists(username);
+        if (validation != null) return validation;
+        
+        validation = validateOwnership(username);
+        if (validation != null) return validation;
+
+        User user = User.findByUsername(username);
+        
+        if (request.following == null || request.following.isEmpty()) {
+            return errorResponse(Response.Status.BAD_REQUEST, "No following data provided");
+        }
+        
+        int syncedCount = 0;
+        int linkedCount = 0;
+        
+        for (BlueskyFollowingRequest.BlueskyUser followedUser : request.following) {
+            Following.createOrUpdate(user, followedUser.handle, followedUser.did, followedUser.displayName);
+            syncedCount++;
+            
+            // Check if this created a new link
+            Following following = Following.findByFollowerAndHandle(user, followedUser.handle);
+            if (following != null && following.followed != null) {
+                linkedCount++;
+            }
+        }
+        
+        return Response.ok(Map.of(
+            "message", "Bluesky following synced successfully",
+            "syncedCount", syncedCount,
+            "linkedCount", linkedCount
+        )).build();
+    }
+
+    @GET
+    @Path("/artists/following")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getFollowedArtists(@QueryParam("verified") Boolean verified,
+                                     @QueryParam("openForCommissions") Boolean openForCommissions) {
+        Principal principal = identity.getPrincipal();
+        if (principal == null || identity.isAnonymous()) {
+            return errorResponse(Response.Status.UNAUTHORIZED, "Authentication required");
+        }
+
+        User user = User.findByUsername(principal.getName());
+        if (user == null) {
+            return errorResponse(Response.Status.NOT_FOUND, "User not found");
+        }
+
+        // Get followed artists
+        List<Following> followingList = Following.findByFollower(user);
+        List<Artist> followedArtists = followingList.stream()
+                .filter(f -> f.followed != null && "artist".equals(f.followed.role))
+                .map(f -> (Artist) f.followed)
+                .filter(artist -> {
+                    boolean matchesVerified = verified == null || artist.verified == verified;
+                    boolean matchesCommissions = openForCommissions == null || artist.isOpenForCommissions == openForCommissions;
+                    return matchesVerified && matchesCommissions;
+                })
+                .toList();
+
+        var artistDtos = followedArtists.stream()
+                .map(ArtistDto::new)
+                .toList();
+
+        return Response.ok(artistDtos).build();
+    }
+
     // Static inner classes for request/response bodies
     @RegisterForReflection
     public static class BlueskyLinkRequest {
@@ -601,6 +704,18 @@ public class UserResource {
 
         public SuccessResponse(String message) {
             this.message = message;
+        }
+    }
+
+    @RegisterForReflection
+    public static class BlueskyFollowingRequest {
+        public List<BlueskyUser> following;
+        
+        @RegisterForReflection
+        public static class BlueskyUser {
+            public String handle;
+            public String did;
+            public String displayName;
         }
     }
 }

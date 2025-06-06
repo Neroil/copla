@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuthStatus } from "../resources/AuthStatus.tsx";
-import { CoPlaIcon } from "./PageLayout.tsx";
+import { useFeedback } from "./PageLayout.tsx";
+import { CoPlaIcon } from "./CustomIcons.tsx";
 
 // Helper: Logout function
 function logout() {
@@ -8,6 +9,51 @@ function logout() {
     document.cookie = `username=; Max-Age=0;path=/`;
     window.location.href = '/';
 }
+
+// --- Development Warning Icon Component ---
+const DevWarningIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+        <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
+    </svg>
+);
+
+// --- Development Warning Component ---
+const DevelopmentWarning = () => {
+    const [showTooltip, setShowTooltip] = useState(false);
+    const { showFeedbackModal } = useFeedback();
+
+    // Only show in development mode    
+    const isDevelopment = true
+    
+    if (!isDevelopment) return null;
+
+    return (
+        <div 
+            className="relative"
+            onMouseEnter={() => setShowTooltip(true)}
+            onMouseLeave={() => setShowTooltip(false)}
+        >
+            <button
+                onClick={showFeedbackModal}
+                className="p-2 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-all duration-300 relative"
+                aria-label="Development build - Click to send feedback"
+            >
+                <DevWarningIcon />
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full animate-pulse"></span>
+            </button>
+            
+            {showTooltip && (
+    <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-lg whitespace-nowrap z-50">
+        <div className="text-center">
+            <div className="font-semibold">Development Build</div>
+            <div className="text-gray-300">Click to send feedback</div>
+        </div>
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-b-gray-900 dark:border-b-gray-700"></div>
+    </div>
+)}
+        </div>
+    );
+};
 
 // --- Reusable Icon Components ---
 const SunIcon = () => (
@@ -215,7 +261,8 @@ function Header() {
                                     </li>
                                 ))}
                             </ul>
-                            <div className="ml-3 pl-3 border-l border-gray-300 dark:border-gray-600">
+                            <div className="flex items-center space-x-3 ml-3 pl-3 border-l border-gray-300 dark:border-gray-600">
+                                <DevelopmentWarning />
                                 <ThemeToggleButtonComponent 
                                     darkMode={darkMode} 
                                     toggleDarkMode={toggleDarkMode} 
@@ -225,6 +272,7 @@ function Header() {
                         </nav>
 
                         <div className="flex items-center space-x-3 md:hidden">
+                            <DevelopmentWarning />
                             <ThemeToggleButtonComponent 
                                 darkMode={darkMode} 
                                 toggleDarkMode={toggleDarkMode}

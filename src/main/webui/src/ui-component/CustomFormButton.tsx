@@ -15,8 +15,8 @@ const CustomFormButton: React.FC<CustomFormButtonProps> = ({
     <Button
       className={`
         bg-purple-500 hover:bg-purple-600 active:bg-purple-700
-        dark:bg-purple-100 dark:hover:bg-purple-200 dark:active:bg-purple-600
-        text-white dark:text-black
+        dark:bg-purple-500 dark:hover:bg-purple-600 dark:active:bg-purple-700
+        text-white dark:text-white
         font-large
         shadow-md hover:shadow-lg
         px-6 py-3

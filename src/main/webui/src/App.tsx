@@ -1,5 +1,3 @@
-// --- START OF FILE App.tsx ---
-
 import "./index.css";
 import { useAuthStatus } from "./resources/AuthStatus.tsx";
 import { PageLayout } from "./ui-component/PageLayout.tsx";
@@ -32,27 +30,79 @@ function App() {
                 {/* Brand Header */}
                 <section className="text-center pt-8">
                     <div className="max-w-4xl mx-auto">
-                        <h1 className="text-6xl sm:text-7xl md:text-8xl font-extrabold mb-6 bg-gradient-to-r from-purple-600 via-indigo-500 to-teal-500 dark:from-purple-400 dark:via-indigo-400 dark:to-teal-400 bg-clip-text text-transparent leading-tight">
+                        <h1 className="text-8xl sm:text-9xl md:text-[12rem] font-extrabold mb-6 bg-gradient-to-r from-purple-600 via-indigo-500 to-teal-500 dark:from-purple-400 dark:via-indigo-400 dark:to-teal-400 bg-clip-text text-transparent leading-tight">
                             CoPla
                         </h1>
-                        <p className="text-2xl sm:text-3xl font-bold text-gray-700 dark:text-gray-300 mb-12">
-                            Find. Follow. Commission.
-                        </p>
+                        <motion.p 
+                            className="text-5xl sm:text-6xl md:text-7xl font-bold text-gray-700 dark:text-gray-300 mb-12"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2, duration: 0.6 }}
+                        >
+                            <motion.span
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.4, duration: 0.5 }}
+                                className="cursor-pointer transition-all duration-300 hover:bg-gradient-to-r hover:from-purple-600 hover:via-indigo-500 hover:to-teal-500 hover:bg-clip-text hover:text-transparent dark:from-purple-400 dark:via-indigo-400 dark:to-teal-400"
+                                whileHover={{ 
+                                    scale: 1.1, 
+                                    rotate: [0, -2, 2, -1, 1, 0],
+                                    transition: { 
+                                        rotate: { duration: 0.5, repeat: Infinity, repeatType: "reverse" },
+                                        scale: { duration: 0.2 }
+                                    }
+                                }}
+                            >
+                                Find.
+                            </motion.span>{" "}
+                            <motion.span
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.9, duration: 0.7 }}
+                                className="cursor-pointer transition-all duration-300 hover:bg-gradient-to-r hover:from-purple-600 hover:via-indigo-500 hover:to-teal-500 hover:bg-clip-text hover:text-transparent dark:from-purple-400 dark:via-indigo-400 dark:to-teal-400"
+                                whileHover={{ 
+                                    scale: 1.1, 
+                                    rotate: [0, -2, 2, -1, 1, 0],
+                                    transition: { 
+                                        rotate: { duration: 0.5, repeat: Infinity, repeatType: "reverse" },
+                                        scale: { duration: 0.2 }
+                                    }
+                                }}
+                            >
+                                Follow.
+                            </motion.span>{" "}
+                            <motion.span
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 1.8, duration: 0.9 }}
+                                className="cursor-pointer transition-all duration-300 hover:bg-gradient-to-r hover:from-purple-600 hover:via-indigo-500 hover:to-teal-500 hover:bg-clip-text hover:text-transparent dark:from-purple-400 dark:via-indigo-400 dark:to-teal-400"
+                                whileHover={{ 
+                                    scale: 1.1, 
+                                    rotate: [0, -2, 2, -1, 1, 0],
+                                    transition: { 
+                                        rotate: { duration: 0.5, repeat: Infinity, repeatType: "reverse" },
+                                        scale: { duration: 0.2 }
+                                    }
+                                }}
+                            >
+                                Commission.
+                            </motion.span>
+                        </motion.p>
                     </div>
                 </section>
 
                 {/* Improved User Type Toggle */}
                 <section className="text-center">
-                    <div className="flex justify-center gap-4 mb-8">
+                    <div className="flex justify-center gap-6 mb-8">
                         {['client', 'artist'].map((type) => (
                             <CustomFormButton
                                 key={type}
                                 onClick={() => handleUserTypeChange(type as 'client' | 'artist')}
-                                className={`px-10 py-6 rounded-xl font-semibold transition-all duration-300 ${
+                                className={`px-14 py-8 rounded-2xl font-bold text-xl transition-all duration-300 ${
                                     userType === type
                                         ? type === 'client' 
-                                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg text-white dark:text-white'
-                                            : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg text-white dark:text-white'
+                                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg text-white dark:text-white'
+                                            : 'bg-gradient-to-r from-purple-600 to-pink-600 shadow-lg text-white dark:text-white'
                                         : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
                                 }`}
                                 isFullWidth={false}
@@ -93,22 +143,7 @@ function App() {
 
                             {authLoading ? (
                                 <div className="animate-pulse h-16 w-64 bg-gray-300 dark:bg-gray-700 rounded-full mx-auto"></div>
-                            ) : isLoggedIn ? (
-                                <div className="flex items-center gap-6 justify-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl shadow-xl max-w-md mx-auto border border-gray-200/50 dark:border-gray-700/50">
-                                    <Avatar
-                                        src={`https://avatar.iran.liara.run/public?username=${username}`}
-                                        alt={`${username}'s avatar`}
-                                        className={`h-20 w-20 ${GRADIENT_CLASSES.avatar} rounded-full ring-4 ring-white dark:ring-gray-800`}
-                                    />
-                                    <div className="text-left">
-                                        <span className="text-gray-500 dark:text-gray-400 block text-sm font-medium">Welcome back,</span>
-                                        <span className="font-bold text-2xl text-gray-900 dark:text-white">{username}</span>
-                                        <span className="text-purple-600 dark:text-purple-400 block text-sm font-medium mt-1">
-                                            {userType === 'client' ? 'Ready to find artists?' : 'Ready to get commissioned?'}
-                                        </span>
-                                    </div>
-                                </div>
-                            ) : (
+                            ) : !isLoggedIn &&(
                                 <motion.div 
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -154,49 +189,51 @@ function App() {
 
                 {!loading && (
                     <>
-                        {/* Quick Action Section */}
-                        <motion.section 
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                            className="text-center"
-                        >
-                            <div className="max-w-3xl mx-auto">
-                                <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-gray-900 dark:text-white">
-                                    {userType === 'client' ? 'Ready to Commission?' : 'Ready to Get Discovered?'}
-                                </h2>
-                                <p className="text-lg text-gray-600 dark:text-gray-300 mb-10">
-                                    {userType === 'client'
-                                        ? 'Browse artists, check their commission status, and connect with creators whose style matches your vision.'
-                                        : 'Manage your commission availability and let clients easily find you when you\'re open for work.'
-                                    }
-                                </p>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
-                                    <Button
-                                        size="lg"
-                                        className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-2xl px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                                        ripple={true}
-                                        onClick={() => window.location.href='/users'}
-                                    >
-                                        <div className="flex flex-col items-center gap-2">
-                                            <Users className="w-8 h-8" />
-                                            <span>{userType === 'client' ? 'Browse Artists' : 'View Artist Directory'}</span>
-                                        </div>
-                                    </Button>
-                                    <Button
-                                        size="lg"
-                                        className="bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-700 hover:to-teal-700 text-white rounded-2xl px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                                        ripple={true}
-                                        onClick={() => window.location.href='/commissions'}
-                                    >
-                                        <div className="flex flex-col items-center gap-2">
-                                            <Search className="w-8 h-8" />
-                                            <span>{userType === 'client' ? 'Active Commissions' : 'Manage My Status'}</span>
-                                        </div>
-                                    </Button>
+                        {/* Quick Action Section - Only show when logged in */}
+                        {isLoggedIn && (
+                            <motion.section 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                                className="text-center"
+                            >
+                                <div className="max-w-3xl mx-auto">
+                                    <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-gray-900 dark:text-white">
+                                        {userType === 'client' ? 'Ready to Commission?' : 'Ready to Get Discovered?'}
+                                    </h2>
+                                    <p className="text-lg text-gray-600 dark:text-gray-300 mb-10">
+                                        {userType === 'client'
+                                            ? 'Browse artists, check their commission status, and connect with creators whose style matches your vision.'
+                                            : 'Manage your commission availability and let clients easily find you when you\'re open for work.'
+                                        }
+                                    </p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                                        <Button
+                                            size="lg"
+                                            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-2xl px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                                            ripple={true}
+                                            onClick={() => window.location.href = userType === 'client' ? '/artists' : '/commissions'}
+                                        >
+                                            <div className="flex flex-col items-center gap-2">
+                                                <Users className="w-8 h-8" />
+                                                <span>{userType === 'client' ? 'Browse Artists' : 'Check Competition'}</span>
+                                            </div>
+                                        </Button>
+                                        <Button
+                                            size="lg"
+                                            className="bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-700 hover:to-teal-700 text-white rounded-2xl px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                                            ripple={true}
+                                            onClick={() => window.location.href = userType === 'client' ? '/profile' : '/profile'}
+                                        >
+                                            <div className="flex flex-col items-center gap-2">
+                                                <Search className="w-8 h-8" />
+                                                <span>{userType === 'client' ? 'Edit Profile' : 'Setup My Status'}</span>
+                                            </div>
+                                        </Button>
+                                    </div>
                                 </div>
-                            </div>
-                        </motion.section>
+                            </motion.section>
+                        )}
 
                         {/* Social Platform Introduction */}
                         <motion.section 
