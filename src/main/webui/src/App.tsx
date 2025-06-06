@@ -1,7 +1,7 @@
 import "./index.css";
 import { useAuthStatus } from "./resources/AuthStatus.tsx";
 import { PageLayout } from "./ui-component/PageLayout.tsx";
-import { Button, Avatar } from "@material-tailwind/react";
+import { Button } from "@material-tailwind/react";
 import { useState } from "react";
 import { Users, Search, MapPin, Zap, Rocket, Gift, Sparkles} from "lucide-react";
 import { BlueskyIcon } from "./ui-component/CustomIcons.tsx";
@@ -10,7 +10,7 @@ import CustomFormButton from "./ui-component/CustomFormButton.tsx";
 import { GRADIENT_CLASSES } from './constants/styles';
 
 function App() {
-    const { loading: authLoading, username, isLoggedIn } = useAuthStatus();
+    const { loading: authLoading, isLoggedIn } = useAuthStatus();
     const [userType, setUserType] = useState<'client' | 'artist'>('client');
     const [loading, setLoading] = useState(false);
 

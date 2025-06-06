@@ -477,7 +477,7 @@ function ArtistDirectory() {
                                         { statusType: "open", label: "Open for Commissions", color: "success" },
                                         { statusType: "busy", label: "Currently Busy", color: "warning" },
                                         { statusType: "closed", label: "Closed", color: "error" }
-                                    ].map(({ statusType, label, color }) => (
+                                    ].map(({ statusType, label }) => (
                                         <div key={statusType} className="flex items-center gap-2">
                                             <CustomCheckbox
                                                 checked={availabilityFilter.includes(statusType)}
