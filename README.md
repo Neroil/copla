@@ -2,54 +2,28 @@
 
 This project's demo page can be available here : http://copla.zapto.org/
 
-## Running the application in dev mode
+## Prerequisites
 
-You can run your application in dev mode that enables live coding using:
+Before running the application, make sure you have the following installed:
 
+- **Gradle**: Download and install from [https://gradle.org/install/](https://gradle.org/install/)
+- **Docker**: Download and install from [https://www.docker.com/get-started/](https://www.docker.com/get-started/)
+- **Nginx** (for deploying externally): Installation guide at [https://nginx.org/en/docs/install.html](https://nginx.org/en/docs/install.html)
+
+These are required to build and run the application in development mode.
+
+## Launching application in Dev Mode
+
+To launch the application in dev mode, make sure Gradle is installed on your computer.
+
+Then type
 ```shell script
-./gradlew quarkusDev
+./gradlew QuarkusDev
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+in the terminal at the root of this project. The application will be available at `http://localhost:8080/` with hot reload enabled for development.
 
-## Packaging and running the application
-
-The application can be packaged using:
-
-```shell script
-./gradlew build
-```
-
-It produces the `quarkus-run.jar` file in the `build/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `build/quarkus-app/lib/` directory.
-
-The application is now runnable using `java -jar build/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
-./gradlew build -Dquarkus.package.jar.type=uber-jar
-```
-
-The application, packaged as an _über-jar_, is now runnable using `java -jar build/*-runner.jar`.
-
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
-./gradlew build -Dquarkus.native.enabled=true
-```
-
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
-./gradlew build -Dquarkus.native.enabled=true -Dquarkus.native.container-build=true
-```
-
-You can then execute your native executable with: `./build/copla-1.0.0-SNAPSHOT-runner`
-
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/gradle-tooling>.
+You can also access the Quarkus Dev UI at `http://localhost:8080/api/dev-ui/` for development tools and debugging.
 
 ## Setup on VM with Docker
 
@@ -67,15 +41,42 @@ sudo usermod -aG docker $USER
 
 Log out and back in for the docker group to take effect.
 
-### Running with Docker Compose
+### Running with Docker Compose and Nginx
 
-1. Install Docker Compose plugin if not already installed:
+1. Create the project structure:
 
 ```shell script
-sudo apt install docker-compose-plugin
+mkdir -p nginx/conf.d nginx/certs
 ```
 
-2. Create the Docker Compose file:
+2. Generate SSL certificates (using Let's Encrypt with Certbot):
+
+```shell script
+# Install Certbot
+sudo apt install certbot
+
+# Generate certificate for your domain
+sudo certbot certonly --standalone -d your-domain.com
+
+# Copy certificates to nginx/certs directory
+sudo cp /etc/letsencrypt/live/your-domain.com/fullchain.pem nginx/certs/
+sudo cp /etc/letsencrypt/live/your-domain.com/privkey.pem nginx/certs/
+
+# Set proper permissions
+sudo chown $USER:$USER nginx/certs/*.pem
+```
+
+**Alternative: Self-signed certificates for testing:**
+
+```shell script
+# Generate self-signed certificate (for testing only)
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout nginx/certs/privkey.pem \
+    -out nginx/certs/fullchain.pem \
+    -subj "/C=US/ST=State/L=City/O=Organization/CN=your-domain.com"
+```
+
+3. Create the Docker Compose file:
 
 ```yaml
 # docker-compose.yml
@@ -94,16 +95,51 @@ services:
     restart: unless-stopped
     networks:
       - copla-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   quarkus-app:
     image: neroil/quarkus-copla:latest
     container_name: quarkus-app
     environment:
       QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://postgres:5432/copla
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
     depends_on:
       - postgres
+    restart: unless-stopped
+    networks:
+      - copla-network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx-proxy
+    ports:
+      - "80:80"   # Expose port 80 for HTTP redirects
+      - "443:443" # Expose port 443 for HTTPS
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/certs:/etc/nginx/certs
+    depends_on:
+      - quarkus-app
+    restart: unless-stopped
+    networks:
+      - copla-network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_POLL_INTERVAL=300  # Check every 5 minutes
+      - WATCHTOWER_CLEANUP=true       # Remove old images
+      - WATCHTOWER_INCLUDE_STOPPED=true
+      - WATCHTOWER_LABEL_ENABLE=true  # Only watch containers with watchtower labels
     restart: unless-stopped
     networks:
       - copla-network
@@ -111,15 +147,59 @@ services:
 networks:
   copla-network:
     driver: bridge
+
+volumes:
+  postgres_data:
 ```
 
-3. Start the application:
+4. Create the Nginx configuration:
+
+```nginx
+# nginx/conf.d/default.conf
+server {
+    listen 80;
+    server_name your-domain.com;  # Replace with your domain
+
+    # Redirect HTTP to HTTPS
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name your-domain.com;  # Replace with your domain
+
+    ssl_certificate /etc/nginx/certs/fullchain.pem;
+    ssl_certificate_key /etc/nginx/certs/privkey.pem;
+
+    location / {
+        proxy_pass http://quarkus-app:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+4. Add your SSL certificates:
+   - Place your SSL certificate as `nginx/certs/fullchain.pem`
+   - Place your private key as `nginx/certs/privkey.pem`
+
+5. Start the application:
 
 ```shell script
 docker compose up -d
 ```
 
-4. Access the application at `http://localhost:8080`
+6. Access the application at `https://your-domain.com`
+
+### Features
+
+- **Nginx Reverse Proxy**: Routes traffic to the Quarkus application
+- **SSL/HTTPS Support**: Secure connections with your SSL certificates
+- **Automatic Updates**: Watchtower monitors and updates containers every 5 minutes
+- **Persistent Database**: PostgreSQL data is stored in a Docker volume
+- **HTTP to HTTPS Redirect**: Automatically redirects insecure connections
 
 ### Auto-start on VM reboot
 
@@ -159,35 +239,3 @@ sudo systemctl daemon-reload
 sudo systemctl enable copla-app.service
 sudo systemctl start copla-app.service
 ```
-
-## Related Guides
-
-- REST ([guide](https://quarkus.io/guides/rest)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
-- REST Jackson ([guide](https://quarkus.io/guides/rest#json-serialisation)): Jackson serialization support for Quarkus REST. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it
-- Hibernate ORM with Panache ([guide](https://quarkus.io/guides/hibernate-orm-panache)): Simplify your persistence code for Hibernate ORM via the active record or the repository pattern
-- Quinoa ([guide](https://quarkiverse.github.io/quarkiverse-docs/quarkus-quinoa/dev/index.html)): Develop, build, and serve your npm-compatible web applications such as React, Angular, Vue, Lit, Svelte, Astro, SolidJS, and others alongside Quarkus.
-- JDBC Driver - PostgreSQL ([guide](https://quarkus.io/guides/datasource)): Connect to the PostgreSQL database via JDBC
-
-## Provided Code
-
-### Hibernate ORM
-
-Create your first JPA entity
-
-[Related guide section...](https://quarkus.io/guides/hibernate-orm)
-
-[Related Hibernate with Panache section...](https://quarkus.io/guides/hibernate-orm-panache)
-
-
-### Quinoa
-
-Quinoa codestart added a tiny Vite app in src/main/webui. The page is configured to be visible on <a href="/quinoa">/quinoa</a>.
-
-[Related guide section...](https://quarkiverse.github.io/quarkiverse-docs/quarkus-quinoa/dev/index.html)
-
-
-### REST
-
-Easily start your REST Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
