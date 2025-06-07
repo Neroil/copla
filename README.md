@@ -2,6 +2,14 @@
 
 This project's demo page can be available here : http://copla.zapto.org/
 
+## Sending Feedback
+
+This project is currently in early development. If you want to submit feedback, navigate to http://copla.zapto.org/ and click on the warning sign next to the theme selection.
+
+<div align="center">
+  <img src="./misc/feedback.png" alt="feedback illustration" width="400"/>
+</div>
+
 ## Prerequisites
 
 Before running the application, make sure you have the following installed:
