@@ -29,7 +29,6 @@ public class AppLifecycleBean {
         if (!User.existsName("alice")) {
             User.add("alice", "alice", "alice@gmail.com");
             var user = User.findByUsername("alice");
-            user.profilePicPath = "/api/images/view/alice_profile.jpg";
             user.bio = "Art enthusiast and collector. Love supporting independent artists!";
 
             var verifiedProfile = new SocialProfile();
@@ -46,7 +45,6 @@ public class AppLifecycleBean {
         if (!User.existsName("bob")) {
             User.add("bob", "bob", "bob@example.com");
             var user = User.findByUsername("bob");
-            user.profilePicPath = "/api/images/view/bob_profile.jpg";
             user.bio = "Gaming fan and digital art collector.";
             user.persist();
         }
@@ -54,7 +52,6 @@ public class AppLifecycleBean {
         if (!User.existsName("charlie")) {
             User.add("charlie", "charlie", "charlie@test.com");
             var user = User.findByUsername("charlie");
-            user.profilePicPath = "/api/images/view/charlie_profile.jpg";
             user.bio = "Traditional art lover, especially watercolors and sketches.";
             user.persist();
         }
@@ -63,7 +60,6 @@ public class AppLifecycleBean {
         if (!Artist.existsName("neroil")) {
             Artist.add("neroil", "neroil", "neroil@hotmail.com", false);
             var artist = (Artist) Artist.findByUsername("neroil");
-            artist.profilePicPath = "/api/images/view/neroil_profile.jpg";
             artist.bio = "Digital illustrator specializing in fantasy and character design.";
 
             // Add tags for neroil
@@ -92,7 +88,6 @@ public class AppLifecycleBean {
         if (!Artist.existsName("sakura_art")) {
             Artist.add("sakura_art", "sakura123", "sakura@artmail.com", true);
             var artist = (Artist) Artist.findByUsername("sakura_art");
-            artist.profilePicPath = "/api/images/view/sakura_profile.jpg";
             artist.bio = "Traditional Japanese-inspired artist. Watercolors and ink specialization.";
             artist.verified = true;
 
@@ -133,7 +128,6 @@ public class AppLifecycleBean {
         if (!Artist.existsName("pixel_master")) {
             Artist.add("pixel_master", "pixelpass", "pixel@retrogames.com", true);
             var artist = (Artist) Artist.findByUsername("pixel_master");
-            artist.profilePicPath = "/api/images/view/pixel_profile.jpg";
             artist.bio = "Retro game-inspired pixel artist. Creating nostalgic 8-bit and 16-bit style artwork.";
 
             // Add tags
@@ -163,7 +157,6 @@ public class AppLifecycleBean {
         if (!Artist.existsName("abstract_dream")) {
             Artist.add("abstract_dream", "dreampass", "abstract@modernart.com", false);
             var artist = (Artist) Artist.findByUsername("abstract_dream");
-            artist.profilePicPath = "/api/images/view/abstract_profile.jpg";
             artist.bio = "Contemporary abstract artist exploring emotions through color and form.";
             artist.verified = false; // Not verified, no commission card yet
 
@@ -181,7 +174,6 @@ public class AppLifecycleBean {
         if (!Artist.existsName("sketch_daily")) {
             Artist.add("sketch_daily", "sketchpass", "daily@sketches.com", true);
             var artist = (Artist) Artist.findByUsername("sketch_daily");
-            artist.profilePicPath = "/api/images/view/sketch_profile.jpg";
             artist.bio = "Daily sketch artist. Quick studies, character concepts, and gesture drawings.";
             artist.verified = true;
 
@@ -230,7 +222,6 @@ public class AppLifecycleBean {
         if (!Artist.existsName("3d_sculptor")) {
             Artist.add("3d_sculptor", "sculptpass", "sculptor@3dart.com", false);
             var artist = (Artist) Artist.findByUsername("3d_sculptor");
-            artist.profilePicPath = "/api/images/view/sculptor_profile.jpg";
             artist.bio = "3D digital sculptor and character modeler. Creating detailed models for games and animation.";
 
             // Add tags
@@ -248,7 +239,6 @@ public class AppLifecycleBean {
         if (!Artist.existsName("copla1")) {
             Artist.add("copla1", "copla1", "copla1@example.com", true);
             var artist = (Artist) Artist.findByUsername("copla1");
-            artist.profilePicPath = "/api/images/view/copla1_profile.jpg";
             artist.bio = "Test artist with verified Bluesky account for development purposes.";
             artist.verified = true;
 
@@ -275,7 +265,6 @@ public class AppLifecycleBean {
         if (!Artist.existsName("copla2")) {
             Artist.add("copla2", "copla2", "copla2@example.com", true);
             var artist = (Artist) Artist.findByUsername("copla2");
-            artist.profilePicPath = "/api/images/view/copla2_profile.jpg";
             artist.bio = "Another test artist with verified Bluesky account for development purposes.";
             artist.verified = true;
 

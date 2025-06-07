@@ -61,7 +61,6 @@ public class Tag extends PanacheEntity {
         // Content tags
         createTag("NSFW", "Not safe for work content", "content");
         createTag("SFW", "Safe for work content", "content");
-        createTag("Gore", "Gore and violence content", "content");
 
         // Genre tags
         createTag("Sci-Fi", "Science fiction themed", "genre");

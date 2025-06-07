@@ -24,7 +24,7 @@ public class Artist extends User {
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     public CommissionCard commissionCard; // An artist should only have one commission card that they can update
-                                          // whenever
+                                        
 
     public static void add(String username, String password, String email, boolean verified) {
         Artist artist = new Artist();

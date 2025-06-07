@@ -350,15 +350,14 @@ function App() {
                             transition={{ delay: 0.5 }}
                             className="py-20 bg-gradient-to-r from-purple-600 via-indigo-600 to-teal-600 dark:from-purple-700 dark:via-indigo-700 dark:to-teal-700 rounded-3xl text-white text-center shadow-2xl relative overflow-hidden"
                         >
-                            <div className="absolute inset-0 bg-black/10"></div>
-                            <div className="relative z-10 max-w-4xl mx-auto px-8">
+                            <div className="absolute inset-0 bg-black/10"></div>                            <div className="relative z-10 max-w-4xl mx-auto px-8">
                                 <h2 className="text-4xl sm:text-5xl font-bold mb-6">
                                     {userType === 'client' ? 'Ready to Find Your Perfect Artist?' : 'Ready to Get Discovered?'}
                                 </h2>
                                 <p className="text-xl sm:text-2xl mb-12 opacity-90 leading-relaxed">
                                     {userType === 'client'
-                                        ? 'Join thousands who are discovering amazing artists and commissioning unique artwork'
-                                        : 'Connect with clients who are actively looking for artists with your unique style and availability'
+                                        ? 'Discover talented artists, commission unique artwork, and track your projects all in one place'
+                                        : 'Connect with clients who are actively seeking artists with your unique style and showcase your current availability'
                                     }
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
@@ -367,16 +366,9 @@ function App() {
                                         className="bg-white text-purple-700 hover:bg-gray-100 font-bold rounded-full px-10 py-4 text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                                         onClick={() => window.location.href='/register'}
                                     >
-                                        {userType === 'client' ? 'Start Browsing Artists' : 'Join the Platform'}
+                                        Join the Platform
                                     </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="lg"
-                                        className="border-2 border-white text-white hover:bg-white/10 rounded-full px-10 py-4 text-lg font-semibold backdrop-blur-sm transition-all duration-300"
-                                        onClick={() => window.location.href='/commissions'}
-                                    >
-                                        {userType === 'client' ? 'Learn More' : 'View Success Stories'}
-                                    </Button>
+                                
                                 </div>
                             </div>
                         </motion.section>
